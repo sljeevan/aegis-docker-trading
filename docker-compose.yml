@@ -1,0 +1,113 @@
+# ==============================================================================
+# Aegis Alpha — Multi-Account Docker Compose Orchestration
+# Manages isolated trading nodes for XM Live and Prop Firm Accounts (FTMO, The5ers)
+# ==============================================================================
+
+networks:
+  aegis-net:
+    driver: bridge
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. Sandbox Node (Isolated Testing & Verification on Port 8090)
+  # ----------------------------------------------------------------------------
+  trader-sandbox:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aegis-sandbox
+    hostname: aegis-sandbox
+    restart: unless-stopped
+    shm_size: '512m'
+    env_file:
+      - configs/sandbox_demo.env
+    environment:
+      - CONTAINER_NODE_ID=aegis-sandbox
+      - NOVNC_PORT=8090
+    ports:
+      - "8090:8080"
+    volumes:
+      - ./scripts:/app/docker/scripts:ro
+      - ./configs/sandbox_demo.env:/app/config/.env:ro
+      - ./data/sandbox/terminal:/app/data/terminal
+      - ./data/sandbox/trading_data:/app/data/trading_data
+    networks:
+      - aegis-net
+
+  # ----------------------------------------------------------------------------
+  # 2. XM Live Broker Node (Port 8081 | Flat Dollar Risk $75.44 | 1:2 R:R)
+  # ----------------------------------------------------------------------------
+  trader-xm-live:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aegis-xm-live
+    hostname: aegis-xm-live
+    restart: unless-stopped
+    shm_size: '512m'
+    env_file:
+      - configs/xm_live.env
+    environment:
+      - CONTAINER_NODE_ID=aegis-xm-live
+      - NOVNC_PORT=8081
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./scripts:/app/docker/scripts:ro
+      - ./configs/xm_live.env:/app/config/.env:ro
+      - ./data/xm_live/terminal:/app/data/terminal
+      - ./data/xm_live/trading_data:/app/data/trading_data
+    networks:
+      - aegis-net
+
+  # ----------------------------------------------------------------------------
+  # 3. FTMO $100,000 Prop Firm Node (Port 8082 | 0.40% Risk | -2.5% Daily Breaker)
+  # ----------------------------------------------------------------------------
+  trader-ftmo-100k:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aegis-ftmo-100k
+    hostname: aegis-ftmo-100k
+    restart: unless-stopped
+    shm_size: '512m'
+    env_file:
+      - configs/ftmo_100k.env
+    environment:
+      - CONTAINER_NODE_ID=aegis-ftmo-100k
+      - NOVNC_PORT=8082
+    ports:
+      - "8082:8080"
+    volumes:
+      - ./scripts:/app/docker/scripts:ro
+      - ./configs/ftmo_100k.env:/app/config/.env:ro
+      - ./data/ftmo_100k/terminal:/app/data/terminal
+      - ./data/ftmo_100k/trading_data:/app/data/trading_data
+    networks:
+      - aegis-net
+
+  # ----------------------------------------------------------------------------
+  # 4. The5ers $100,000 Prop Firm Node (Port 8083 | 0.30% Risk | -2.0% Daily Breaker)
+  # ----------------------------------------------------------------------------
+  trader-the5ers-100k:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aegis-the5ers-100k
+    hostname: aegis-the5ers-100k
+    restart: unless-stopped
+    shm_size: '512m'
+    env_file:
+      - configs/the5ers_100k.env
+    environment:
+      - CONTAINER_NODE_ID=aegis-the5ers-100k
+      - NOVNC_PORT=8083
+    ports:
+      - "8083:8080"
+    volumes:
+      - ./scripts:/app/docker/scripts:ro
+      - ./configs/the5ers_100k.env:/app/config/.env:ro
+      - ./data/the5ers_100k/terminal:/app/data/terminal
+      - ./data/the5ers_100k/trading_data:/app/data/trading_data
+    networks:
+      - aegis-net

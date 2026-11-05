@@ -1,0 +1,21 @@
+# Environment Variables & Secrets
+configs/*.env
+!configs/*.env.example
+.env
+.env.*
+
+# Persistent Data Volumes
+data/
+data/*
+
+# Logs & Temporary Files
+*.log
+*.err
+__pycache__/
+
+# Screenshots & OS Files
+*.png
+*.jpg
+.DS_Store
+.idea/
+.vscode/
