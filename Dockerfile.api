@@ -1,0 +1,39 @@
+# syntax=docker/dockerfile:1
+FROM python:3.11-slim
+
+LABEL maintainer="Aegis Alpha Quantitative Team"
+LABEL description="Aegis Alpha Decoupled Telemetry & Dashboard API Gateway"
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app/src \
+    REDIS_HOST=telemetry-bus \
+    REDIS_PORT=6379 \
+    TELEMETRY_ENABLED=true
+
+WORKDIR /app
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl netcat-traditional && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir \
+        "fastapi>=0.100.0" \
+        "uvicorn[standard]>=0.22.0" \
+        "redis>=4.5.0" \
+        "pydantic>=2.0.0" \
+        "pandas>=2.0.0" \
+        "scipy>=1.10.0" \
+        "yfinance>=0.2.20" \
+        "requests>=2.31.0" \
+        "websockets>=12.0"
+
+COPY src/ /app/src/
+
+EXPOSE 8787
+
+HEALTHCHECK --interval=15s --timeout=5s --retries=3 \
+  CMD curl -f http://localhost:8787/api/health || exit 1
+
+CMD ["python3", "-m", "uvicorn", "gold_trader.api.dashboard_api:app", "--host", "0.0.0.0", "--port", "8787"]

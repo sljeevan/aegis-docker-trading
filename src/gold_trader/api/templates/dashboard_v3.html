@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aegis Alpha v3.0 | Quantitative Trading System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #f8fafc;
+      color: #0f172a;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    .card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1rem;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+      transition: all 0.2s ease;
+    }
+    .card:hover {
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07);
+    }
+    .metric-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.2rem 0.55rem;
+      border-radius: 9999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
+</head>
+<body class="min-h-screen flex antialiased">
+
+  <!-- ========================================================================= -->
+  <!-- LEFT SIDEBAR -->
+  <!-- ========================================================================= -->
+  <aside class="w-64 bg-white border-r border-slate-200 flex flex-col justify-between p-4 shrink-0 hidden lg:flex sticky top-0 h-screen overflow-y-auto">
+    <div class="space-y-6">
+      <!-- Logo Branding -->
+      <div class="flex items-center gap-3 px-2 py-1">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+          <!-- Shield Icon -->
+          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm0 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="font-bold text-slate-900 text-lg leading-tight flex items-center gap-1.5">
+            Aegis Alpha
+            <span class="text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-200 px-1.5 py-0.5 rounded-full">v3.0</span>
+          </div>
+          <p class="text-[11px] text-slate-400 font-medium">Quantitative Trading System</p>
+        </div>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="space-y-1">
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm transition-colors bg-blue-600 text-white shadow-sm shadow-blue-500/20">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          Dashboard
+        </button>
+        <button onclick="switchTab('live-trading')" id="nav-live-trading" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:text-blue-600 hover:bg-slate-50 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          Live Trading
+        </button>
+        <button onclick="switchTab('strategies')" id="nav-strategies" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:text-blue-600 hover:bg-slate-50 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+          Strategies
+        </button>
+        <button onclick="switchTab('models')" id="nav-models" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:text-blue-600 hover:bg-slate-50 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
+          Models & Engines
+        </button>
+        <button onclick="switchTab('portfolio')" id="nav-portfolio" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:text-blue-600 hover:bg-slate-50 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+          Portfolio & P&L
+        </button>
+        <button onclick="switchTab('journal')" id="nav-journal" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:text-blue-600 hover:bg-slate-50 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          Trade Journal
+        </button>
+        <button onclick="switchTab('backtesting')" id="nav-backtesting" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:text-blue-600 hover:bg-slate-50 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Backtesting Lab
+        </button>
+        <button onclick="switchTab('risk')" id="nav-risk" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:text-blue-600 hover:bg-slate-50 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          Risk & Controls
+        </button>
+      </nav>
+    </div>
+
+    <!-- Bottom System Operational Checklist -->
+    <div class="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-3.5 space-y-2.5">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span class="text-xs font-bold text-emerald-800">System Operational</span>
+      </div>
+      <div class="space-y-1.5 text-[11px] text-slate-600">
+        <div class="flex items-center justify-between">
+          <span class="flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7c0-2-1-3-3-3H7c-2 0-3 1-3 3z"/></svg>
+            Market Data
+          </span>
+          <span class="text-emerald-600 font-bold">✓</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            MT5 (Gold)
+          </span>
+          <span class="text-emerald-600 font-bold">✓</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Crypto (BTC/ETH)
+          </span>
+          <span class="text-emerald-600 font-bold">✓</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            Engines (Active)
+          </span>
+          <span id="active-engines-badge" class="text-emerald-600 font-bold">✓</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            ML Guard
+          </span>
+          <span class="text-emerald-600 font-bold">✓</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ========================================================================= -->
+  <!-- MAIN WORKSPACE -->
+  <!-- ========================================================================= -->
+  <main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+
+    <!-- Top Header Bar -->
+    <header class="bg-white border-b border-slate-200 px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 sticky top-0 z-30">
+      <div>
+        <div class="flex items-center gap-2.5">
+          <h1 class="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+            Aegis Alpha <span class="text-blue-600 font-medium">v3.0</span>
+          </h1>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            LIVE TRADING
+          </span>
+        </div>
+        <p class="text-xs text-slate-500 font-medium mt-0.5">
+          Dual Production Engines • Spot Gold (XAUUSD) • Bitcoin (BTC) • Ethereum (ETH) • Autonomous Execution & ML Gate
+        </p>
+      </div>
+
+      <!-- Controls & Avatar -->
+      <div class="flex items-center gap-3">
+        <!-- Account / Node Filter Selector -->
+        <select id="account-selector" onchange="onAccountChange()" class="text-xs font-semibold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700 outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="consolidated" selected>🌐 Consolidated Master View</option>
+          <option value="aegis-xm-live">🐳 Docker: aegis-xm-live (Acct: 346439083)</option>
+          <option value="model_1">🖥️ Host Native: Model 1 Baseline (Acct: 168987477)</option>
+          <option value="ftmo-100k">🛡️ Docker: FTMO 100k Prop Firm</option>
+          <option value="the5ers-100k">🛡️ Docker: The5ers 100k Prop Firm</option>
+        </select>
+
+        <!-- Live Clock -->
+        <div id="live-clock" class="text-xs font-semibold px-3 py-2 rounded-xl bg-slate-100 text-slate-700 whitespace-nowrap">
+          Loading Time...
+        </div>
+
+        <!-- Notification Bell -->
+        <div class="relative cursor-pointer p-2 rounded-xl hover:bg-slate-100 text-slate-500 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+          <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500"></span>
+        </div>
+
+        <!-- User Avatar -->
+        <div class="w-9 h-9 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-sm shadow-sm shadow-blue-500/20 cursor-pointer">
+          JS
+        </div>
+      </div>
+    </header>
+
+    <!-- Content Workspace Container -->
+    <div class="p-6 space-y-6 max-w-7xl w-full mx-auto">
+
+      <!-- ===================================================================== -->
+      <!-- TOP 6 KPI METRIC CARDS -->
+      <!-- ===================================================================== -->
+      <section class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+        <!-- 1. Total Capital -->
+        <div class="card p-4 flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-500 font-medium">Total Capital</p>
+            <h3 id="kpi-total-capital" class="text-xl font-bold text-slate-900 mt-0.5">$3,031.43</h3>
+            <span id="kpi-capital-change" class="text-[11px] font-semibold text-emerald-600 flex items-center gap-0.5 mt-0.5">
+              ▲ +0.24% Today
+            </span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+        </div>
+
+        <!-- 2. Equity -->
+        <div class="card p-4 flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-500 font-medium">Equity</p>
+            <h3 id="kpi-equity" class="text-xl font-bold text-slate-900 mt-0.5">$3,028.80</h3>
+            <span id="kpi-equity-change" class="text-[11px] font-semibold text-rose-500 flex items-center gap-0.5 mt-0.5">
+              ▼ -0.09%
+            </span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          </div>
+        </div>
+
+        <!-- 3. Today's P&L -->
+        <div class="card p-4 flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-500 font-medium">Today's P&L</p>
+            <h3 id="kpi-today-pnl" class="text-xl font-bold text-emerald-600 mt-0.5">+$7.28</h3>
+            <span class="text-[11px] font-semibold text-slate-400 mt-0.5 block">Session Net</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          </div>
+        </div>
+
+        <!-- 4. Unrealized P&L -->
+        <div class="card p-4 flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-500 font-medium">Unrealized P&L</p>
+            <h3 id="kpi-unrealized-pnl" class="text-xl font-bold text-rose-500 mt-0.5">-$1.43</h3>
+            <span class="text-[11px] font-semibold text-slate-400 mt-0.5 block">Open Floating</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+          </div>
+        </div>
+
+        <!-- 5. Realized P&L (All History) -->
+        <div class="card p-4 flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-500 font-medium">Realized P&L</p>
+            <h3 id="kpi-realized-all" class="text-xl font-bold text-emerald-600 mt-0.5">+$249.93</h3>
+            <span class="text-[11px] font-semibold text-slate-400 mt-0.5 block">Closed Trades</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+          </div>
+        </div>
+
+        <!-- 6. Active Trades -->
+        <div class="card p-4 flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-500 font-medium">Active Trades</p>
+            <h3 id="kpi-active-trades" class="text-xl font-bold text-slate-900 mt-0.5">1 / 3</h3>
+            <span class="text-[11px] font-semibold text-blue-600 mt-0.5 block">Sweet Spot Cap</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- ROW 1: PERFORMANCE CHART | KEY METRICS | TODAY'S ACTIVITY -->
+      <!-- ===================================================================== -->
+      <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Portfolio Performance Area Chart (7 Cols) -->
+        <div class="card p-5 lg:col-span-6 flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
+              <h2 class="text-sm font-bold text-slate-800">Portfolio Performance</h2>
+            </div>
+            <!-- Time horizon toggles -->
+            <div class="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg text-[11px] font-bold text-slate-600">
+              <button onclick="setChartPeriod('1D')" class="px-2 py-1 rounded-md hover:bg-white hover:text-slate-900 transition-colors">1D</button>
+              <button onclick="setChartPeriod('1W')" class="px-2 py-1 rounded-md hover:bg-white hover:text-slate-900 transition-colors">1W</button>
+              <button onclick="setChartPeriod('1M')" class="px-2 py-1 rounded-md bg-blue-600 text-white shadow-xs">1M</button>
+              <button onclick="setChartPeriod('3M')" class="px-2 py-1 rounded-md hover:bg-white hover:text-slate-900 transition-colors">3M</button>
+              <button onclick="setChartPeriod('6M')" class="px-2 py-1 rounded-md hover:bg-white hover:text-slate-900 transition-colors">6M</button>
+              <button onclick="setChartPeriod('YTD')" class="px-2 py-1 rounded-md hover:bg-white hover:text-slate-900 transition-colors">YTD</button>
+              <button onclick="setChartPeriod('ALL')" class="px-2 py-1 rounded-md hover:bg-white hover:text-slate-900 transition-colors">ALL</button>
+            </div>
+          </div>
+          <!-- ApexChart Container -->
+          <div id="chart-portfolio-performance" class="w-full h-56"></div>
+        </div>
+
+        <!-- Key Metrics Grid (3 Cols) -->
+        <div class="card p-5 lg:col-span-3 flex flex-col justify-between">
+          <div class="flex items-center gap-2 mb-3">
+            <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+            <h2 class="text-sm font-bold text-slate-800">Key Metrics</h2>
+          </div>
+          <div class="grid grid-cols-2 gap-3 text-left">
+            <!-- Win Rate -->
+            <div class="bg-slate-50 border border-slate-100 rounded-xl p-2.5">
+              <span class="text-[10px] text-slate-400 font-semibold block uppercase">Win Rate</span>
+              <span id="metric-win-rate" class="text-base font-bold text-emerald-600">51.1%</span>
+              <span class="text-[10px] text-slate-400 block">(2,148 / 4,203)</span>
+            </div>
+            <!-- Profit Factor -->
+            <div class="bg-slate-50 border border-slate-100 rounded-xl p-2.5">
+              <span class="text-[10px] text-slate-400 font-semibold block uppercase">Profit Factor</span>
+              <span id="metric-profit-factor" class="text-base font-bold text-slate-800">1.15</span>
+              <span class="text-[10px] text-emerald-600 font-semibold block">Profitable</span>
+            </div>
+            <!-- Avg Win -->
+            <div class="bg-slate-50 border border-slate-100 rounded-xl p-2.5">
+              <span class="text-[10px] text-slate-400 font-semibold block uppercase">Avg Win</span>
+              <span id="metric-avg-win" class="text-base font-bold text-emerald-600">+$83.99</span>
+              <span class="text-[10px] text-slate-400 block">+1.25R Target</span>
+            </div>
+            <!-- Avg Loss -->
+            <div class="bg-slate-50 border border-slate-100 rounded-xl p-2.5">
+              <span class="text-[10px] text-slate-400 font-semibold block uppercase">Avg Loss</span>
+              <span id="metric-avg-loss" class="text-base font-bold text-rose-500">-$76.45</span>
+              <span class="text-[10px] text-slate-400 block">-1.00R Fixed</span>
+            </div>
+            <!-- Expectancy -->
+            <div class="bg-slate-50 border border-slate-100 rounded-xl p-2.5">
+              <span class="text-[10px] text-slate-400 font-semibold block uppercase">Expectancy</span>
+              <span id="metric-expectancy" class="text-base font-bold text-slate-800">+$5.55</span>
+              <span class="text-[10px] text-slate-400 block">per trade</span>
+            </div>
+            <!-- Max Drawdown -->
+            <div class="bg-slate-50 border border-slate-100 rounded-xl p-2.5">
+              <span class="text-[10px] text-slate-400 font-semibold block uppercase">Max Drawdown</span>
+              <span id="metric-max-dd" class="text-base font-bold text-rose-500">-$684.18</span>
+              <span class="text-[10px] text-slate-400 block">Peak-to-Trough</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Today's Activity Donut Chart (3 Cols) -->
+        <div class="card p-5 lg:col-span-3 flex flex-col justify-between">
+          <div class="flex items-center gap-2 mb-2">
+            <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M11 2v20c-5.07-.5-9-4.79-9-10s3.93-9.5 9-10zm2 0v9h9c-.5-4.93-4.07-8.5-9-9zm0 11v9c4.93-.5 8.5-4.07 9-9h-9z"/></svg>
+            <h2 class="text-sm font-bold text-slate-800">Today's Activity</h2>
+          </div>
+          <!-- Donut chart -->
+          <div class="relative flex items-center justify-center">
+            <div id="chart-today-activity" class="w-full h-44"></div>
+          </div>
+          <!-- Legend -->
+          <div class="flex items-center justify-around text-center text-xs font-semibold pt-2 border-t border-slate-100">
+            <div>
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block mr-1"></span>
+              <span class="text-slate-600">Wins:</span>
+              <span id="today-wins-count" class="font-bold text-slate-900 ml-0.5">2</span>
+            </div>
+            <div>
+              <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block mr-1"></span>
+              <span class="text-slate-600">Losses:</span>
+              <span id="today-losses-count" class="font-bold text-slate-900 ml-0.5">1</span>
+            </div>
+            <div>
+              <span class="text-slate-400">Total:</span>
+              <span id="today-total-trades" class="font-bold text-slate-900 ml-0.5">3</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- ROW 2: LIVE ASSET CARDS + LIVE SIGNALS FEED -->
+      <!-- ===================================================================== -->
+      <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+
+        <!-- 1. Gold (XAUUSD) Card -->
+        <div class="card p-5 flex flex-col justify-between space-y-4">
+          <div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-sm">
+                  🥇
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-slate-900">Gold (XAUUSD)</h3>
+                  <p class="text-[11px] text-slate-400 font-medium">MT5 • XM</p>
+                </div>
+              </div>
+              <span id="gold-status-badge" class="metric-badge bg-emerald-50 text-emerald-600 border border-emerald-200">
+                ● SCANNING
+              </span>
+            </div>
+
+            <!-- Price & Sparkline -->
+            <div class="flex items-baseline justify-between mt-4">
+              <div>
+                <span id="gold-price" class="text-2xl font-black text-slate-900 tracking-tight">$4,045.00</span>
+                <span id="gold-change" class="text-xs font-bold text-emerald-600 ml-1.5">▲ +0.18%</span>
+              </div>
+              <div class="w-20 h-6">
+                <!-- SVG Sparkline -->
+                <svg class="w-full h-full text-emerald-500 stroke-current fill-none stroke-2" viewBox="0 0 100 30">
+                  <path d="M0,25 Q20,20 40,22 T80,10 T100,5"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Indicator Regime Specs -->
+            <div class="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-slate-100 text-[11px]">
+              <div>
+                <span class="text-slate-400 block font-medium">Trend (1H)</span>
+                <span id="gold-trend" class="font-bold text-rose-500">BEARISH ↓</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block font-medium">ATR (30m)</span>
+                <span id="gold-atr30" class="font-bold text-slate-800">$20.49</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block font-medium">ATR (1h)</span>
+                <span id="gold-atr1h" class="font-bold text-slate-800">$36.90</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer Setup Badge -->
+          <div class="bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-[10px] text-slate-600 font-medium flex items-center gap-1.5">
+            <span>⚙️</span> Setup: $75.44 Risk • Dynamic ATR Stop • $4.50 Trail
+          </div>
+        </div>
+
+        <!-- 2. Bitcoin (BTCUSD) Card -->
+        <div class="card p-5 flex flex-col justify-between space-y-4">
+          <div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center font-bold text-sm">
+                  ₿
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-slate-900">Bitcoin (BTCUSD)</h3>
+                  <p class="text-[11px] text-slate-400 font-medium">MT5 • MetaTrader 5</p>
+                </div>
+              </div>
+              <span id="btc-status-badge" class="metric-badge bg-emerald-50 text-emerald-600 border border-emerald-200">
+                ● SCANNING
+              </span>
+            </div>
+
+            <!-- Price & Sparkline -->
+            <div class="flex items-baseline justify-between mt-4">
+              <div>
+                <span id="btc-price" class="text-2xl font-black text-slate-900 tracking-tight">$81,850.00</span>
+                <span id="btc-change" class="text-xs font-bold text-emerald-600 ml-1.5">▲ +0.21%</span>
+              </div>
+              <div class="w-20 h-6">
+                <!-- SVG Sparkline -->
+                <svg class="w-full h-full text-emerald-500 stroke-current fill-none stroke-2" viewBox="0 0 100 30">
+                  <path d="M0,20 Q20,15 40,18 T80,8 T100,4"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Indicator Regime Specs -->
+            <div class="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-slate-100 text-[11px]">
+              <div>
+                <span class="text-slate-400 block font-medium">Trend (1H)</span>
+                <span id="btc-trend" class="font-bold text-rose-500">BEARISH ↓</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block font-medium">ATR (30m)</span>
+                <span id="btc-atr30" class="font-bold text-slate-800">$594.39</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block font-medium">ATR (1h)</span>
+                <span id="btc-atr1h" class="font-bold text-slate-800">$301.00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer Setup Badge -->
+          <div class="bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-[10px] text-slate-600 font-medium flex items-center gap-1.5">
+            <span>⚙️</span> Setup: $75.44 Risk • ATR Stop ($500 min) • $350 Trail
+          </div>
+        </div>
+
+        <!-- 3. Ethereum (ETHUSD) Card -->
+        <div class="card p-5 flex flex-col justify-between space-y-4">
+          <div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm">
+                  Ξ
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-slate-900">Ethereum (ETHUSD)</h3>
+                  <p class="text-[11px] text-slate-400 font-medium">MT5 • MetaTrader 5</p>
+                </div>
+              </div>
+              <span id="eth-status-badge" class="metric-badge bg-emerald-50 text-emerald-600 border border-emerald-200">
+                ● IN TRADE
+              </span>
+            </div>
+
+            <!-- Price & Sparkline -->
+            <div class="flex items-baseline justify-between mt-4">
+              <div>
+                <span id="eth-price" class="text-2xl font-black text-slate-900 tracking-tight">$2,232.59</span>
+                <span id="eth-change" class="text-xs font-bold text-rose-500 ml-1.5">▼ -0.06%</span>
+              </div>
+              <div class="w-20 h-6">
+                <!-- SVG Sparkline -->
+                <svg class="w-full h-full text-indigo-500 stroke-current fill-none stroke-2" viewBox="0 0 100 30">
+                  <path d="M0,10 Q25,25 50,15 T100,22"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- In-Trade Position Details -->
+            <div class="grid grid-cols-4 gap-1 mt-4 pt-3 border-t border-slate-100 text-[10px]">
+              <div>
+                <span class="text-slate-400 block font-medium">Position</span>
+                <span class="font-bold text-rose-500">SELL 1.93</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block font-medium">Entry</span>
+                <span class="font-bold text-slate-800">$2,231.85</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block font-medium">Stop</span>
+                <span class="font-bold text-rose-600">$2,270.94</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block font-medium">Target</span>
+                <span class="font-bold text-emerald-600">$2,114.58</span>
+              </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="mt-3">
+              <div class="flex items-center justify-between text-[10px] font-semibold text-slate-500 mb-1">
+                <span>TP1 Progress</span>
+                <span class="text-emerald-600 font-bold">48%</span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                <div class="h-full bg-emerald-500 rounded-full" style="width: 48%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer Setup Badge -->
+          <div class="bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-[10px] text-slate-600 font-medium flex items-center gap-1.5">
+            <span>⚙️</span> Setup: $75.44 Risk • ADX≥22 Guard • $10 Trail
+          </div>
+        </div>
+
+        <!-- 4. Live Signals & Engine Status Feed -->
+        <div class="card p-5 flex flex-col justify-between space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-blue-600 animate-ping"></span>
+              <h3 class="text-sm font-bold text-slate-900">Live Signals & Status</h3>
+            </div>
+            <span class="text-[10px] font-bold text-slate-400">REALTIME</span>
+          </div>
+
+          <div id="signal-feed-list" class="space-y-2.5 text-xs overflow-y-auto max-h-48 pr-1">
+            <!-- Signal 1 -->
+            <div class="p-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">M1</span>
+                <div>
+                  <span class="font-bold text-slate-900">ETHUSD</span>
+                  <span class="font-bold text-rose-500 ml-1">SELL</span>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="text-[10px] text-slate-400 block">10:09:26</span>
+                <span class="text-[10px] text-emerald-600 font-bold">✓ Executed</span>
+              </div>
+            </div>
+
+            <!-- Signal 2 -->
+            <div class="p-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded">M2</span>
+                <div>
+                  <span class="font-bold text-slate-900">ETHUSD</span>
+                  <span class="font-bold text-rose-500 ml-1">SELL</span>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="text-[10px] text-slate-400 block">09:31:37</span>
+                <span class="text-[10px] text-emerald-600 font-bold">✓ Executed</span>
+              </div>
+            </div>
+
+            <!-- Signal 3 -->
+            <div class="p-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">M1</span>
+                <div>
+                  <span class="font-bold text-slate-900">BTCUSD</span>
+                  <span class="font-bold text-rose-500 ml-1">SELL</span>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="text-[10px] text-slate-400 block">Yesterday</span>
+                <span class="text-[10px] text-rose-500 font-bold">✓ Closed (-$75.90)</span>
+              </div>
+            </div>
+
+            <!-- Signal 4 -->
+            <div class="p-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">M1</span>
+                <div>
+                  <span class="font-bold text-slate-900">XAUUSD</span>
+                  <span class="font-bold text-emerald-600 ml-1">BUY</span>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="text-[10px] text-slate-400 block">Yesterday</span>
+                <span class="text-[10px] text-emerald-600 font-bold">✓ Closed (+$114.72)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- ROW 3: P&L ANALYTICS | STRATEGY PERFORMANCE | RECENT TRADES -->
+      <!-- ===================================================================== -->
+      <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- 1. P&L Analytics Bar Chart (4 Cols) -->
+        <div class="card p-5 lg:col-span-4 flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
+              <h2 class="text-sm font-bold text-slate-800">P&L Analytics</h2>
+            </div>
+            <!-- Aggregation toggle buttons -->
+            <div class="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg text-[10px] font-bold text-slate-600">
+              <button onclick="setPnlPeriod('daily')" class="px-2 py-0.5 rounded-md bg-blue-600 text-white shadow-xs">Daily</button>
+              <button onclick="setPnlPeriod('weekly')" class="px-2 py-0.5 rounded-md hover:bg-white hover:text-slate-900">Weekly</button>
+              <button onclick="setPnlPeriod('monthly')" class="px-2 py-0.5 rounded-md hover:bg-white hover:text-slate-900">Monthly</button>
+              <button onclick="setPnlPeriod('cumulative')" class="px-2 py-0.5 rounded-md hover:bg-white hover:text-slate-900">Cumulative</button>
+            </div>
+          </div>
+          <!-- Bar Chart -->
+          <div id="chart-pnl-analytics" class="w-full h-48"></div>
+        </div>
+
+        <!-- 2. Strategy Performance Table (4 Cols) -->
+        <div class="card p-5 lg:col-span-4 flex flex-col justify-between">
+          <div class="flex items-center gap-2 mb-3">
+            <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+            <h2 class="text-sm font-bold text-slate-800">Strategy Performance</h2>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead>
+                <tr class="text-slate-400 font-semibold border-b border-slate-100">
+                  <th class="pb-2">Strategy</th>
+                  <th class="pb-2 text-right">Trades</th>
+                  <th class="pb-2 text-right">Win Rate</th>
+                  <th class="pb-2 text-right">P&L</th>
+                  <th class="pb-2 text-right">PF</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 font-medium">
+                <tr>
+                  <td class="py-2.5 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                    M1 Baseline
+                  </td>
+                  <td class="py-2.5 text-right text-slate-700">3,524</td>
+                  <td class="py-2.5 text-right font-bold text-emerald-600">51.8%</td>
+                  <td class="py-2.5 text-right font-bold text-emerald-600">+$143.72</td>
+                  <td class="py-2.5 text-right text-slate-700">1.18</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+                    M2 YieldA
+                  </td>
+                  <td class="py-2.5 text-right text-slate-700">679</td>
+                  <td class="py-2.5 text-right font-bold text-slate-700">49.2%</td>
+                  <td class="py-2.5 text-right font-bold text-rose-500">-$37.46</td>
+                  <td class="py-2.5 text-right text-slate-700">0.92</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                    Profile A (TSL)
+                  </td>
+                  <td class="py-2.5 text-right text-slate-400">0</td>
+                  <td class="py-2.5 text-right text-slate-400">—</td>
+                  <td class="py-2.5 text-right text-slate-400">$0.00</td>
+                  <td class="py-2.5 text-right text-slate-400">—</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+                    Donchian 10 Touch
+                  </td>
+                  <td class="py-2.5 text-right text-slate-400">0</td>
+                  <td class="py-2.5 text-right text-slate-400">—</td>
+                  <td class="py-2.5 text-right text-slate-400">$0.00</td>
+                  <td class="py-2.5 text-right text-slate-400">—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 3. Recent Trades Table (4 Cols) -->
+        <div class="card p-5 lg:col-span-4 flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+              <h2 class="text-sm font-bold text-slate-800">Recent Trades</h2>
+            </div>
+            <a href="javascript:void(0)" onclick="switchTab('journal')" class="text-[11px] font-bold text-blue-600 hover:text-blue-700">View All →</a>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead>
+                <tr class="text-slate-400 font-semibold border-b border-slate-100">
+                  <th class="pb-2">Time</th>
+                  <th class="pb-2">Asset</th>
+                  <th class="pb-2">Side</th>
+                  <th class="pb-2 text-right">Entry</th>
+                  <th class="pb-2 text-right">Exit</th>
+                  <th class="pb-2 text-right">P&L</th>
+                </tr>
+              </thead>
+              <tbody id="recent-trades-tbody" class="divide-y divide-slate-100 font-medium">
+                <tr>
+                  <td class="py-2 text-slate-500">10:09:26</td>
+                  <td class="py-2 font-bold text-slate-800">ETHUSD</td>
+                  <td class="py-2"><span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200">SELL</span></td>
+                  <td class="py-2 text-right text-slate-700">2,231.85</td>
+                  <td class="py-2 text-right text-slate-400">—</td>
+                  <td class="py-2 text-right font-bold text-slate-400">—</td>
+                </tr>
+                <tr>
+                  <td class="py-2 text-slate-500">09:31:37</td>
+                  <td class="py-2 font-bold text-slate-800">BTCUSD</td>
+                  <td class="py-2"><span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200">SELL</span></td>
+                  <td class="py-2 text-right text-slate-700">75,418.85</td>
+                  <td class="py-2 text-right text-slate-700">76,367.65</td>
+                  <td class="py-2 text-right font-bold text-rose-600">-$75.90</td>
+                </tr>
+                <tr>
+                  <td class="py-2 text-slate-500">Yesterday</td>
+                  <td class="py-2 font-bold text-slate-800">ETHUSD</td>
+                  <td class="py-2"><span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200">SELL</span></td>
+                  <td class="py-2 text-right text-slate-700">2,274.32</td>
+                  <td class="py-2 text-right text-slate-700">2,231.78</td>
+                  <td class="py-2 text-right font-bold text-emerald-600">+$83.18</td>
+                </tr>
+                <tr>
+                  <td class="py-2 text-slate-500">Yesterday</td>
+                  <td class="py-2 font-bold text-slate-800">XAUUSD</td>
+                  <td class="py-2"><span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">BUY</span></td>
+                  <td class="py-2 text-right text-slate-700">4,068.27</td>
+                  <td class="py-2 text-right text-slate-700">4,111.49</td>
+                  <td class="py-2 text-right font-bold text-emerald-600">+$114.72</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 2: DAILY JOURNAL SECTION (HIDDEN BY DEFAULT) -->
+      <!-- ===================================================================== -->
+      <section id="view-journal" class="hidden card p-6 space-y-4">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900">📔 Daily Trading Journal & Session Post-Mortems</h2>
+            <p class="text-xs text-slate-500">Daily multi-asset execution accounting, intraday Donchian/SuperTrend regime telemetry, and R-multiple distributions.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <select id="journal-date-select" onchange="onJournalDateSelect()" class="text-xs font-semibold bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
+              <option>Loading dates...</option>
+            </select>
+            <button onclick="backfillJournals()" class="px-3 py-1.5 text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-colors">
+              Backfill All
+            </button>
+          </div>
+        </div>
+        <div id="journal-content-body" class="prose max-w-none text-slate-700 text-xs">
+          Select a date above to view the detailed session post-mortem.
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 3: STRATEGIES SECTION (HIDDEN BY DEFAULT) -->
+      <!-- ===================================================================== -->
+      <section id="view-strategies" class="hidden card p-6 space-y-4">
+        <div class="pb-4 border-b border-slate-200">
+          <h2 class="text-lg font-bold text-slate-900">📚 Quantitative Strategy Catalog</h2>
+          <p class="text-xs text-slate-500">Audited quantitative production and staged strategies with mathematical parameters and risk controls.</p>
+        </div>
+        <div id="strategies-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 4: BACKTESTING LAB (HIDDEN BY DEFAULT) -->
+      <!-- ===================================================================== -->
+      <section id="view-backtesting" class="hidden card p-6 space-y-4">
+        <div class="pb-4 border-b border-slate-200">
+          <h2 class="text-lg font-bold text-slate-900">🧪 Profile-Aware Backtesting Lab</h2>
+          <p class="text-xs text-slate-500">Run decoupled institutional backtests against FTMO 100k, The5ers 100k, XM Live, or custom tuning profiles without impacting live trading.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="card p-4 space-y-3 bg-slate-50">
+            <h3 class="text-sm font-bold text-slate-900">Launch Simulation</h3>
+            <div>
+              <label class="text-[11px] font-semibold text-slate-600 block mb-1">Target Account Profile</label>
+              <select id="bt-profile" class="w-full text-xs bg-white border border-slate-200 rounded-lg p-2">
+                <option value="ftmo_100k">FTMO 100k Prop Firm ($100k Baseline)</option>
+                <option value="the5ers_100k">The5ers 100k Prop Firm ($100k Baseline)</option>
+                <option value="xm_live">XM Live ($1,000 Flat Dollar $75.44)</option>
+                <option value="blueguardian_50k">BlueGuardian 50k Prop Firm</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-[11px] font-semibold text-slate-600 block mb-1">Horizon Period</label>
+              <select id="bt-period" class="w-full text-xs bg-white border border-slate-200 rounded-lg p-2">
+                <option value="2y">2 Years (Nov 2024 - Nov 2026)</option>
+                <option value="1y">1 Year (Last 365 Days)</option>
+                <option value="6mo">6 Months</option>
+              </select>
+            </div>
+            <button onclick="triggerBacktest()" id="btn-run-backtest" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-sm transition-colors">
+              Run Backtest Audit
+            </button>
+          </div>
+          <div class="md:col-span-2 card p-4 space-y-2">
+            <h3 class="text-sm font-bold text-slate-900">Audit Certification & Results</h3>
+            <div id="bt-results-container" class="text-xs text-slate-500 font-mono bg-slate-900 text-slate-200 p-4 rounded-xl min-h-[220px] overflow-y-auto">
+              Ready to execute backtest simulation. Select a profile and hit "Run Backtest Audit".
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- JAVASCRIPT LOGIC & TELEMETRY BINDINGS -->
+  <!-- ========================================================================= -->
+  <script>
+    let currentTab = 'dashboard';
+    let chartPerformance = null;
+    let chartActivity = null;
+    let chartPnl = null;
+
+    // 1. Clock in IST
+    function updateClock() {
+      const now = new Date();
+      const options = { 
+        timeZone: 'Asia/Kolkata', 
+        weekday: 'short', 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric', 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit',
+        hour12: true 
+      };
+      document.getElementById('live-clock').innerText = now.toLocaleString('en-US', options) + ' IST';
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // 2. Tab Navigation
+    function switchTab(tab) {
+      currentTab = tab;
+      const tabs = ['dashboard', 'live-trading', 'strategies', 'models', 'portfolio', 'journal', 'backtesting', 'risk'];
+      tabs.forEach(t => {
+        const btn = document.getElementById('nav-' + t);
+        if (btn) {
+          if (t === tab) {
+            btn.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm transition-colors bg-blue-600 text-white shadow-sm shadow-blue-500/20";
+          } else {
+            btn.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:text-blue-600 hover:bg-slate-50 transition-colors";
+          }
+        }
+      });
+
+      // Show/hide sections
+      document.getElementById('view-journal').classList.toggle('hidden', tab !== 'journal');
+      document.getElementById('view-strategies').classList.toggle('hidden', tab !== 'strategies');
+      document.getElementById('view-backtesting').classList.toggle('hidden', tab !== 'backtesting');
+
+      if (tab === 'journal') fetchJournalDates();
+      if (tab === 'strategies') fetchStrategies();
+    }
+
+    // 3. Initialize ApexCharts
+    function initCharts() {
+      // A. Portfolio Performance Area Chart
+      const perfOptions = {
+        series: [{
+          name: 'Portfolio Equity',
+          data: [2850, 2890, 2920, 2980, 3050, 3120, 3080, 2990, 2940, 2970, 3010, 2980, 3020, 3040, 3028.80]
+        }],
+        chart: {
+          type: 'area',
+          height: 220,
+          toolbar: { show: false },
+          sparkline: { enabled: false },
+          zoom: { enabled: false }
+        },
+        colors: ['#3b82f6'],
+        fill: {
+          type: 'gradient',
+          gradient: {
+            shadeIntensity: 1,
+            opacityFrom: 0.35,
+            opacityTo: 0.05,
+            stops: [0, 95, 100]
+          }
+        },
+        dataLabels: { enabled: false },
+        stroke: { curve: 'smooth', width: 2.5 },
+        xaxis: {
+          categories: ['Oct 07', 'Oct 10', 'Oct 13', 'Oct 16', 'Oct 19', 'Oct 22', 'Oct 25', 'Oct 28', 'Oct 31', 'Nov 02', 'Nov 03', 'Nov 04', 'Nov 05', 'Nov 06', 'Now'],
+          labels: { style: { colors: '#94a3b8', fontSize: '10px' } },
+          axisBorder: { show: false },
+          axisTicks: { show: false }
+        },
+        yaxis: {
+          labels: {
+            formatter: (val) => '$' + val.toLocaleString(),
+            style: { colors: '#94a3b8', fontSize: '10px' }
+          }
+        },
+        grid: { borderColor: '#f1f5f9', strokeDashArray: 3 },
+        tooltip: {
+          y: { formatter: (val) => '$' + val.toFixed(2) }
+        }
+      };
+      chartPerformance = new ApexCharts(document.querySelector("#chart-portfolio-performance"), perfOptions);
+      chartPerformance.render();
+
+      // B. Today's Activity Donut Chart
+      const donutOptions = {
+        series: [2, 1],
+        chart: { type: 'donut', height: 180 },
+        labels: ['Winning Trades', 'Losing Trades'],
+        colors: ['#10b981', '#f43f5e'],
+        dataLabels: { enabled: false },
+        legend: { show: false },
+        plotOptions: {
+          pie: {
+            donut: {
+              size: '75%',
+              labels: {
+                show: true,
+                total: {
+                  show: true,
+                  label: "Today's P&L",
+                  color: '#64748b',
+                  fontSize: '10px',
+                  formatter: () => '+$7.28'
+                }
+              }
+            }
+          }
+        }
+      };
+      chartActivity = new ApexCharts(document.querySelector("#chart-today-activity"), donutOptions);
+      chartActivity.render();
+
+      // C. P&L Analytics Bar Chart
+      const barOptions = {
+        series: [{
+          name: 'Net P&L',
+          data: [65.20, -32.50, -41.20, -165.40, 95.80, 240.50, 158.20]
+        }],
+        chart: { type: 'bar', height: 190, toolbar: { show: false } },
+        colors: [function({ value }) { return value >= 0 ? '#10b981' : '#f43f5e'; }],
+        plotOptions: {
+          bar: {
+            columnWidth: '45%',
+            borderRadius: 4,
+            colors: {
+              ranges: [
+                { from: -1000, to: -0.01, color: '#f43f5e' },
+                { from: 0, to: 10000, color: '#10b981' }
+              ]
+            }
+          }
+        },
+        dataLabels: { enabled: false },
+        xaxis: {
+          categories: ['Oct 30', 'Oct 31', 'Nov 01', 'Nov 02', 'Nov 03', 'Nov 04', 'Nov 05'],
+          labels: { style: { colors: '#94a3b8', fontSize: '10px' } }
+        },
+        yaxis: {
+          labels: {
+            formatter: (val) => '$' + Math.round(val),
+            style: { colors: '#94a3b8', fontSize: '10px' }
+          }
+        },
+        grid: { borderColor: '#f1f5f9' }
+      };
+      chartPnl = new ApexCharts(document.querySelector("#chart-pnl-analytics"), barOptions);
+      chartPnl.render();
+    }
+
+    // Dynamic API prefix (supports /docker/ and /v3/ routing proxies)
+    const API_BASE = window.location.pathname.startsWith('/docker') ? '/docker' : (window.location.pathname.startsWith('/v3') ? '/v3' : '');
+
+    // 4. Polling Live Telemetry (1.5s Interval)
+    async function pollTelemetry() {
+      try {
+        const res = await fetch(API_BASE + '/api/telemetry/overview');
+        if (!res.ok) return;
+        const data = await res.json();
+
+        // 1. Update Asset Cards from Scans
+        if (data.scans) {
+          const m1 = data.scans.model_1 || {};
+          const gold = m1.XAUUSD;
+          if (gold) {
+            if (gold.price) document.getElementById('gold-price').innerText = '$' + Number(gold.price).toFixed(2);
+            if (gold.atr) document.getElementById('gold-atr30').innerText = '$' + Number(gold.atr).toFixed(2);
+            if (gold.bias) {
+              const trendEl = document.getElementById('gold-trend');
+              trendEl.innerText = gold.bias + ' ' + (gold.bias === 'BULLISH' ? '↑' : '↓');
+              trendEl.className = 'font-bold ' + (gold.bias === 'BULLISH' ? 'text-emerald-600' : 'text-rose-500');
+            }
+          }
+
+          const btc = m1.BTCUSD;
+          if (btc) {
+            if (btc.price) document.getElementById('btc-price').innerText = '$' + Number(btc.price).toLocaleString(undefined, {minimumFractionDigits: 2});
+            if (btc.atr) document.getElementById('btc-atr30').innerText = '$' + Number(btc.atr).toFixed(2);
+            if (btc.bias) {
+              const trendEl = document.getElementById('btc-trend');
+              if (trendEl) {
+                trendEl.innerText = btc.bias + ' ' + (btc.bias === 'BULLISH' ? '↑' : '↓');
+                trendEl.className = 'font-bold ' + (btc.bias === 'BULLISH' ? 'text-emerald-600' : 'text-rose-500');
+              }
+            }
+          }
+
+          const eth = m1.ETHUSD;
+          if (eth && eth.price) {
+            document.getElementById('eth-price').innerText = '$' + Number(eth.price).toLocaleString(undefined, {minimumFractionDigits: 2});
+          }
+
+          // Dynamic Signal Stream
+          const feed = document.getElementById('signal-feed-list');
+          let items = [];
+          for (const mId in data.scans) {
+            for (const sym in data.scans[mId]) {
+              const sc = data.scans[mId][sym];
+              items.push({
+                model: mId === 'model_1' ? 'M1' : 'M2',
+                color: mId === 'model_1' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700',
+                symbol: sym,
+                bias: sc.bias,
+                biasColor: sc.bias === 'BULLISH' ? 'text-emerald-600' : 'text-rose-500',
+                time: sc.timestamp ? sc.timestamp.split(' ')[1] || sc.timestamp : 'Just now',
+                decision: sc.decision ? (sc.decision.startsWith('SKIP') ? 'Scanning (' + sc.bias + ')' : sc.decision) : 'Active'
+              });
+            }
+          }
+          if (items.length > 0 && feed) {
+            feed.innerHTML = items.map(it => `
+              <div class="p-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] font-bold ${it.color} px-1.5 py-0.5 rounded">${it.model}</span>
+                  <div>
+                    <span class="font-bold text-slate-900">${it.symbol}</span>
+                    <span class="font-bold ${it.biasColor} ml-1">${it.bias}</span>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span class="text-[10px] text-slate-400 block">${it.time}</span>
+                  <span class="text-[10px] text-slate-600 font-medium">${it.decision}</span>
+                </div>
+              </div>
+            `).join('');
+          }
+        }
+
+        // 2. Update Node Heartbeats
+        if (data.nodes && data.nodes.length > 0) {
+          const xmNode = data.nodes.find(n => n.node_id === 'aegis-xm-live');
+          if (xmNode) {
+            const badge = document.getElementById('gold-status-badge');
+            if (xmNode.in_trade) {
+              badge.innerText = '● IN TRADE (' + xmNode.open_positions + ')';
+              badge.className = 'metric-badge bg-blue-50 text-blue-600 border border-blue-200';
+            } else {
+              badge.innerText = '● SCANNING';
+              badge.className = 'metric-badge bg-emerald-50 text-emerald-600 border border-emerald-200';
+            }
+          }
+        }
+
+        // 3. Update Account Info
+        if (data.accounts && data.accounts.length > 0) {
+          const acct = data.accounts[0];
+          if (acct.balance) document.getElementById('kpi-total-capital').innerText = '$' + Number(acct.balance).toLocaleString(undefined, {minimumFractionDigits: 2});
+          if (acct.equity) document.getElementById('kpi-equity').innerText = '$' + Number(acct.equity).toLocaleString(undefined, {minimumFractionDigits: 2});
+        }
+      } catch (err) {
+        console.debug('Telemetry poll error:', err);
+      }
+    }
+
+    // 5. Fetch Overview Dashboard Data (Account P&L, Trades)
+    async function pollOverview() {
+      try {
+        const res = await fetch(API_BASE + '/api/dashboard/overview');
+        if (!res.ok) return;
+        const data = await res.json();
+
+        // Populate Top KPI Cards
+        const ov = data.overall || {};
+        const acc1 = data.account_model_1 || data.account || {};
+        const acc2 = data.account_model_2 || {};
+
+        const totalBalance = (acc1.balance ? Number(acc1.balance) : 0) + (acc2.balance ? Number(acc2.balance) : 0) || ov.balance || 1347.41;
+        const totalEquity = (acc1.equity ? Number(acc1.equity) : 0) + (acc2.equity ? Number(acc2.equity) : 0) || ov.equity || 1347.41;
+
+        document.getElementById('kpi-total-capital').innerText = '$' + totalBalance.toLocaleString(undefined, {minimumFractionDigits: 2});
+        document.getElementById('kpi-equity').innerText = '$' + totalEquity.toLocaleString(undefined, {minimumFractionDigits: 2});
+
+        if (ov.today_pnl !== undefined) {
+          const pnlEl = document.getElementById('kpi-today-pnl');
+          const pnlVal = Number(ov.today_pnl);
+          pnlEl.innerText = (pnlVal >= 0 ? '+$' : '-$') + Math.abs(pnlVal).toFixed(2);
+          pnlEl.className = 'text-xl font-bold mt-0.5 ' + (pnlVal >= 0 ? 'text-emerald-600' : 'text-rose-500');
+        }
+
+        if (ov.unrealized_pnl !== undefined) {
+          const unEl = document.getElementById('kpi-unrealized-pnl');
+          const unVal = Number(ov.unrealized_pnl);
+          unEl.innerText = (unVal >= 0 ? '+$' : '-$') + Math.abs(unVal).toFixed(2);
+          unEl.className = 'text-xl font-bold mt-0.5 ' + (unVal >= 0 ? 'text-emerald-600' : 'text-rose-500');
+        }
+
+        if (ov.pnl !== undefined) {
+          const realEl = document.getElementById('kpi-realized-all');
+          const realVal = Number(ov.pnl);
+          realEl.innerText = (realVal >= 0 ? '+$' : '-$') + Math.abs(realVal).toFixed(2);
+          realEl.className = 'text-xl font-bold mt-0.5 ' + (realVal >= 0 ? 'text-emerald-600' : 'text-rose-500');
+        }
+
+        if (data.open_positions) {
+          document.getElementById('kpi-active-trades').innerText = data.open_positions.length + ' / 3';
+        }
+      } catch (err) {
+        console.debug('Overview poll error:', err);
+      }
+    }
+
+    // 6. Backtesting Lab Trigger
+    async function triggerBacktest() {
+      const profile = document.getElementById('bt-profile').value;
+      const period = document.getElementById('bt-period').value;
+      const out = document.getElementById('bt-results-container');
+      const btn = document.getElementById('btn-run-backtest');
+
+      btn.disabled = true;
+      btn.innerText = 'Running Simulation...';
+      out.innerText = '⏳ Initializing backtest simulation for ' + profile.toUpperCase() + ' (' + period + ')...\nCalculating 1H Donchian 10, SuperTrend, and candle confirmation...\nPlease wait ~2 seconds.';
+
+      try {
+        const res = await fetch(API_BASE + '/api/backtest/run?profile=' + profile + '&period=' + period, { method: 'POST' });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.status === 'success') {
+            const passBadge = data.compliance_status === 'CERTIFIED_PASS' ? '🟢 CERTIFIED PASS' : '🔴 COMPLIANCE BREACH';
+            const phase1 = data.phase1_passed ? '✅ PASSED' : '⏳ In Progress';
+            const phase2 = data.phase2_passed ? '✅ PASSED' : '⏳ In Progress';
+            let summary = `══════════════════════════════════════════════════════════════
+  AEGIS ALPHA BACKTEST AUDIT: ${data.profile.toUpperCase()} (${data.period.toUpperCase()})
+══════════════════════════════════════════════════════════════
+Audit Status      : ${passBadge}
+Horizon           : ${data.start_date} to ${data.end_date}
+Initial Capital   : $${Number(data.initial_capital).toLocaleString(undefined, {minimumFractionDigits: 2})}
+Final Equity      : $${Number(data.final_equity).toLocaleString(undefined, {minimumFractionDigits: 2})}
+Net Profit        : +$${Number(data.net_profit_usd).toLocaleString(undefined, {minimumFractionDigits: 2})} (+${data.return_pct.toFixed(2)}%)
+Total Trades      : ${data.total_trades} (${data.winning_trades}W / ${data.losing_trades}L)
+Win Rate          : ${data.win_rate_pct.toFixed(2)}%
+Profit Factor     : ${data.profit_factor.toFixed(2)} PF
+Net Realized (R)  : +${data.net_r.toFixed(1)} R
+Payoff Ratio      : ${data.payoff_ratio.toFixed(2)}:1
+Max Drawdown      : -${data.max_drawdown_pct.toFixed(2)}% (-$${Number(data.max_drawdown_usd).toLocaleString(undefined, {minimumFractionDigits: 2})})
+Sharpe Ratio      : ${data.sharpe_ratio.toFixed(2)}
+--------------------------------------------------------------
+PROP FIRM COMPLIANCE & EVALUATION:
+Phase 1 Target    : ${phase1}
+Phase 2 Target    : ${phase2}
+Operator Payout   : +$${Number(data.funded_payout_usd).toLocaleString(undefined, {minimumFractionDigits: 2})} (80% Split)
+--------------------------------------------------------------
+Saved Report      : ${data.report_path}
+══════════════════════════════════════════════════════════════`;
+            out.innerText = summary;
+          } else {
+            out.innerText = '❌ Simulation error: ' + (data.message || 'Unknown error');
+          }
+        } else {
+          out.innerText = '❌ API HTTP ' + res.status + ' error executing backtest.';
+        }
+      } catch (e) {
+        out.innerText = '❌ Network error during simulation: ' + e.message;
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Run Backtest Audit';
+      }
+    }
+
+    // Initialize on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      initCharts();
+      setInterval(pollTelemetry, 1500);
+      setInterval(pollOverview, 5000);
+      pollTelemetry();
+      pollOverview();
+    });
+  </script>
+</body>
+</html>

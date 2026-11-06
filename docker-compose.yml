@@ -1,6 +1,7 @@
 # ==============================================================================
 # Aegis Alpha — Multi-Account Docker Compose Orchestration
 # Manages isolated trading nodes for XM Live and Prop Firm Accounts (FTMO, The5ers)
+# Decoupled Telemetry Message Bus + Dedicated API & UI Presentation Layer
 # ==============================================================================
 
 networks:
@@ -8,9 +9,72 @@ networks:
     driver: bridge
 
 services:
-  # ----------------------------------------------------------------------------
-  # 1. Sandbox Node (Isolated Testing & Verification on Port 8090)
-  # ----------------------------------------------------------------------------
+  # ============================================================================
+  # 0. Telemetry Event Bus & In-Memory State Cache (Redis 7)
+  # Ultra-lightweight (~15MB RAM), non-blocking pub/sub message bus
+  # ============================================================================
+  telemetry-bus:
+    image: redis:7-alpine
+    container_name: aegis-telemetry-bus
+    hostname: aegis-telemetry-bus
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "no", "--save", ""]
+    ports:
+      - "${DOCKER_REDIS_PORT:-6379}:6379"
+    networks:
+      - aegis-net
+
+  # ============================================================================
+  # 1. Decoupled Dashboard API & Telemetry Gateway (Port 8788 host / 8787 container)
+  # Serves zero-lock cached portfolio telemetry and WebSocket streaming
+  # ============================================================================
+  dashboard-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: aegis-dashboard-api
+    hostname: aegis-dashboard-api
+    restart: unless-stopped
+    depends_on:
+      - telemetry-bus
+    command: ["python3", "-m", "uvicorn", "gold_trader.api.docker_dashboard_api:app", "--host", "0.0.0.0", "--port", "8787"]
+    environment:
+      - REDIS_HOST=telemetry-bus
+      - REDIS_PORT=6379
+      - TELEMETRY_ENABLED=true
+    ports:
+      - "${DOCKER_API_PORT:-8788}:8787"
+    volumes:
+      - ./src:/app/src:ro
+    networks:
+      - aegis-net
+
+  # ============================================================================
+  # 2. Decoupled Atlas Frontend UI (Port 5001 host / 5000 container)
+  # Streamlit Presentation layer running completely independently of trading nodes
+  # ============================================================================
+  dashboard-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile.ui
+    container_name: aegis-dashboard-ui
+    hostname: aegis-dashboard-ui
+    restart: unless-stopped
+    depends_on:
+      - dashboard-api
+    environment:
+      - TRADING_API_BASE_URL=http://dashboard-api:8787
+    ports:
+      - "${DOCKER_UI_PORT:-5001}:5000"
+    volumes:
+      - ./src:/app/src:ro
+      - ./atlas_trading_dashboard:/app/atlas_trading_dashboard:ro
+    networks:
+      - aegis-net
+
+  # ============================================================================
+  # 3. Sandbox Node (Isolated Testing & Verification on Port 8090)
+  # ============================================================================
   trader-sandbox:
     build:
       context: .
@@ -19,11 +83,16 @@ services:
     hostname: aegis-sandbox
     restart: unless-stopped
     shm_size: '512m'
+    depends_on:
+      - telemetry-bus
     env_file:
       - configs/sandbox_demo.env
     environment:
       - CONTAINER_NODE_ID=aegis-sandbox
       - NOVNC_PORT=8090
+      - REDIS_HOST=telemetry-bus
+      - REDIS_PORT=6379
+      - TELEMETRY_ENABLED=true
     ports:
       - "8090:8080"
     volumes:
@@ -34,9 +103,9 @@ services:
     networks:
       - aegis-net
 
-  # ----------------------------------------------------------------------------
-  # 2. XM Live Broker Node (Port 8081 | Flat Dollar Risk $75.44 | 1:2 R:R)
-  # ----------------------------------------------------------------------------
+  # ============================================================================
+  # 4. XM Live Broker Node (Port 8081 | Flat Dollar Risk $75.44 | 1:2 R:R)
+  # ============================================================================
   trader-xm-live:
     build:
       context: .
@@ -45,11 +114,16 @@ services:
     hostname: aegis-xm-live
     restart: unless-stopped
     shm_size: '512m'
+    depends_on:
+      - telemetry-bus
     env_file:
       - configs/xm_live.env
     environment:
       - CONTAINER_NODE_ID=aegis-xm-live
       - NOVNC_PORT=8081
+      - REDIS_HOST=telemetry-bus
+      - REDIS_PORT=6379
+      - TELEMETRY_ENABLED=true
     ports:
       - "8081:8080"
     volumes:
@@ -60,9 +134,9 @@ services:
     networks:
       - aegis-net
 
-  # ----------------------------------------------------------------------------
-  # 3. FTMO $100,000 Prop Firm Node (Port 8082 | 0.40% Risk | -2.5% Daily Breaker)
-  # ----------------------------------------------------------------------------
+  # ============================================================================
+  # 5. FTMO $100,000 Prop Firm Node (Port 8082 | 0.40% Risk | -2.5% Daily Breaker)
+  # ============================================================================
   trader-ftmo-100k:
     build:
       context: .
@@ -71,11 +145,16 @@ services:
     hostname: aegis-ftmo-100k
     restart: unless-stopped
     shm_size: '512m'
+    depends_on:
+      - telemetry-bus
     env_file:
       - configs/ftmo_100k.env
     environment:
       - CONTAINER_NODE_ID=aegis-ftmo-100k
       - NOVNC_PORT=8082
+      - REDIS_HOST=telemetry-bus
+      - REDIS_PORT=6379
+      - TELEMETRY_ENABLED=true
     ports:
       - "8082:8080"
     volumes:
@@ -86,9 +165,9 @@ services:
     networks:
       - aegis-net
 
-  # ----------------------------------------------------------------------------
-  # 4. The5ers $100,000 Prop Firm Node (Port 8083 | 0.30% Risk | -2.0% Daily Breaker)
-  # ----------------------------------------------------------------------------
+  # ============================================================================
+  # 6. The5ers $100,000 Prop Firm Node (Port 8083 | 0.30% Risk | -2.0% Daily Breaker)
+  # ============================================================================
   trader-the5ers-100k:
     build:
       context: .
@@ -97,11 +176,16 @@ services:
     hostname: aegis-the5ers-100k
     restart: unless-stopped
     shm_size: '512m'
+    depends_on:
+      - telemetry-bus
     env_file:
       - configs/the5ers_100k.env
     environment:
       - CONTAINER_NODE_ID=aegis-the5ers-100k
       - NOVNC_PORT=8083
+      - REDIS_HOST=telemetry-bus
+      - REDIS_PORT=6379
+      - TELEMETRY_ENABLED=true
     ports:
       - "8083:8080"
     volumes:
@@ -109,5 +193,30 @@ services:
       - ./configs/the5ers_100k.env:/app/config/.env:ro
       - ./data/the5ers_100k/terminal:/app/data/terminal
       - ./data/the5ers_100k/trading_data:/app/data/trading_data
+    networks:
+      - aegis-net
+
+  # ============================================================================
+  # 7. Decoupled On-Demand Backtest Engine (CPU/RAM Capped & Config Protected)
+  # Invoked on-demand: docker compose run --rm backtester --profile ftmo_100k
+  # ============================================================================
+  backtester:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: aegis-backtester
+    profiles:
+      - tools
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: '1500M'
+    entrypoint: ["python3", "scripts/run_account_backtest.py"]
+    volumes:
+      - ./src:/app/src:ro
+      - ./scripts:/app/scripts:ro
+      - ./configs:/app/configs:ro
+      - ./reports:/app/reports
     networks:
       - aegis-net
