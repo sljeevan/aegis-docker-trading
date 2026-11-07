@@ -46,6 +46,10 @@ services:
       - "${DOCKER_API_PORT:-8788}:8787"
     volumes:
       - ./src:/app/src:ro
+      - /home/mcpuser/.gold_trading_data:/root/.gold_trading_data:ro
+      - /home/mcpuser/MCP/gold-trading-system/journals:/app/journals:ro
+      - ./data:/app/data:ro
+      - ./reports:/app/reports
     networks:
       - aegis-net
 

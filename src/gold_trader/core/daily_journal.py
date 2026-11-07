@@ -17,7 +17,12 @@ from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger("DailyJournalEngine")
 
-DEFAULT_JOURNALS_DIR = "/home/mcpuser/MCP/gold-trading-system/journals"
+DEFAULT_JOURNALS_DIR = os.getenv(
+    "JOURNALS_DIR",
+    "/app/journals" if os.path.isdir("/app/journals") else (
+        "/home/mcpuser/MCP/gold-trading-system/journals" if os.path.isdir("/home/mcpuser/MCP/gold-trading-system/journals") else "journals"
+    )
+)
 DEFAULT_JOURNAL_DB = os.path.expanduser("~/.gold_trading_data/trading_journal.db")
 
 ASSET_REGISTRY = [

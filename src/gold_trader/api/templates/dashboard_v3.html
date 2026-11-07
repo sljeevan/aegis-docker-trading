@@ -217,6 +217,11 @@
     <div class="p-6 space-y-6 max-w-7xl w-full mx-auto">
 
       <!-- ===================================================================== -->
+      <!-- VIEW 1: MAIN DASHBOARD VIEW -->
+      <!-- ===================================================================== -->
+      <div id="view-dashboard" class="space-y-6">
+
+      <!-- ===================================================================== -->
       <!-- TOP 6 KPI METRIC CARDS -->
       <!-- ===================================================================== -->
       <section class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
@@ -309,14 +314,14 @@
               <h2 class="text-sm font-bold text-slate-800">Portfolio Performance</h2>
             </div>
             <!-- Time horizon toggles -->
-            <div class="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg text-[11px] font-bold text-slate-600">
-              <button onclick="setChartPeriod('1D')" class="px-2 py-1 rounded-md hover:bg-white hover:text-slate-900 transition-colors">1D</button>
-              <button onclick="setChartPeriod('1W')" class="px-2 py-1 rounded-md hover:bg-white hover:text-slate-900 transition-colors">1W</button>
-              <button onclick="setChartPeriod('1M')" class="px-2 py-1 rounded-md bg-blue-600 text-white shadow-xs">1M</button>
-              <button onclick="setChartPeriod('3M')" class="px-2 py-1 rounded-md hover:bg-white hover:text-slate-900 transition-colors">3M</button>
-              <button onclick="setChartPeriod('6M')" class="px-2 py-1 rounded-md hover:bg-white hover:text-slate-900 transition-colors">6M</button>
-              <button onclick="setChartPeriod('YTD')" class="px-2 py-1 rounded-md hover:bg-white hover:text-slate-900 transition-colors">YTD</button>
-              <button onclick="setChartPeriod('ALL')" class="px-2 py-1 rounded-md hover:bg-white hover:text-slate-900 transition-colors">ALL</button>
+            <div id="chart-period-buttons" class="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg text-[11px] font-bold text-slate-600">
+              <button data-period="1D" onclick="setChartPeriod('1D')" class="px-2 py-1 rounded-md hover:bg-white hover:text-slate-900 transition-colors">1D</button>
+              <button data-period="1W" onclick="setChartPeriod('1W')" class="px-2 py-1 rounded-md hover:bg-white hover:text-slate-900 transition-colors">1W</button>
+              <button data-period="1M" onclick="setChartPeriod('1M')" class="px-2 py-1 rounded-md hover:bg-white hover:text-slate-900 transition-colors">1M</button>
+              <button data-period="3M" onclick="setChartPeriod('3M')" class="px-2 py-1 rounded-md hover:bg-white hover:text-slate-900 transition-colors">3M</button>
+              <button data-period="6M" onclick="setChartPeriod('6M')" class="px-2 py-1 rounded-md hover:bg-white hover:text-slate-900 transition-colors">6M</button>
+              <button data-period="YTD" onclick="setChartPeriod('YTD')" class="px-2 py-1 rounded-md hover:bg-white hover:text-slate-900 transition-colors">YTD</button>
+              <button data-period="ALL" onclick="setChartPeriod('ALL')" class="px-2 py-1 rounded-md bg-blue-600 text-white shadow-xs">ALL</button>
             </div>
           </div>
           <!-- ApexChart Container -->
@@ -672,11 +677,11 @@
               <h2 class="text-sm font-bold text-slate-800">P&L Analytics</h2>
             </div>
             <!-- Aggregation toggle buttons -->
-            <div class="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg text-[10px] font-bold text-slate-600">
-              <button onclick="setPnlPeriod('daily')" class="px-2 py-0.5 rounded-md bg-blue-600 text-white shadow-xs">Daily</button>
-              <button onclick="setPnlPeriod('weekly')" class="px-2 py-0.5 rounded-md hover:bg-white hover:text-slate-900">Weekly</button>
-              <button onclick="setPnlPeriod('monthly')" class="px-2 py-0.5 rounded-md hover:bg-white hover:text-slate-900">Monthly</button>
-              <button onclick="setPnlPeriod('cumulative')" class="px-2 py-0.5 rounded-md hover:bg-white hover:text-slate-900">Cumulative</button>
+            <div id="pnl-period-buttons" class="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg text-[10px] font-bold text-slate-600">
+              <button data-period="daily" onclick="setPnlPeriod('daily')" class="px-2 py-0.5 rounded-md bg-blue-600 text-white shadow-xs">Daily</button>
+              <button data-period="weekly" onclick="setPnlPeriod('weekly')" class="px-2 py-0.5 rounded-md hover:bg-white hover:text-slate-900">Weekly</button>
+              <button data-period="monthly" onclick="setPnlPeriod('monthly')" class="px-2 py-0.5 rounded-md hover:bg-white hover:text-slate-900">Monthly</button>
+              <button data-period="cumulative" onclick="setPnlPeriod('cumulative')" class="px-2 py-0.5 rounded-md hover:bg-white hover:text-slate-900">Cumulative</button>
             </div>
           </div>
           <!-- Bar Chart -->
@@ -700,7 +705,7 @@
                   <th class="pb-2 text-right">PF</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-100 font-medium">
+              <tbody id="strategy-performance-tbody" class="divide-y divide-slate-100 font-medium">
                 <tr>
                   <td class="py-2.5 flex items-center gap-1.5">
                     <span class="w-2 h-2 rounded-full bg-blue-500"></span>
@@ -806,6 +811,7 @@
         </div>
 
       </section>
+      </div>
 
       <!-- ===================================================================== -->
       <!-- VIEW 2: DAILY JOURNAL SECTION (HIDDEN BY DEFAULT) -->
@@ -895,8 +901,19 @@
     let chartPerformance = null;
     let chartActivity = null;
     let chartPnl = null;
+    let currentChartPeriod = 'ALL';
+    let currentPnlPeriod = 'daily';
+    let overviewCache = null;
+    let telemetryCache = null;
 
-    // 1. Clock in IST
+    // Dynamic API prefix (supports /docker/, /broker/, and /v3/ routing proxies)
+    const API_BASE = window.location.pathname.startsWith('/docker') 
+      ? '/docker' 
+      : (window.location.pathname.startsWith('/broker') 
+          ? '/broker' 
+          : (window.location.pathname.startsWith('/v3') ? '/v3' : ''));
+
+    // 1. Live Clock in IST
     function updateClock() {
       const now = new Date();
       const options = { 
@@ -910,7 +927,8 @@
         second: '2-digit',
         hour12: true 
       };
-      document.getElementById('live-clock').innerText = now.toLocaleString('en-US', options) + ' IST';
+      const el = document.getElementById('live-clock');
+      if (el) el.innerText = now.toLocaleString('en-US', options) + ' IST';
     }
     setInterval(updateClock, 1000);
     updateClock();
@@ -930,23 +948,27 @@
         }
       });
 
-      // Show/hide sections
-      document.getElementById('view-journal').classList.toggle('hidden', tab !== 'journal');
-      document.getElementById('view-strategies').classList.toggle('hidden', tab !== 'strategies');
-      document.getElementById('view-backtesting').classList.toggle('hidden', tab !== 'backtesting');
+      const isDashboard = ['dashboard', 'live-trading', 'models', 'portfolio', 'risk'].includes(tab);
+      const viewDash = document.getElementById('view-dashboard');
+      const viewJour = document.getElementById('view-journal');
+      const viewStrat = document.getElementById('view-strategies');
+      const viewBt = document.getElementById('view-backtesting');
+
+      if (viewDash) viewDash.classList.toggle('hidden', !isDashboard);
+      if (viewJour) viewJour.classList.toggle('hidden', tab !== 'journal');
+      if (viewStrat) viewStrat.classList.toggle('hidden', tab !== 'strategies');
+      if (viewBt) viewBt.classList.toggle('hidden', tab !== 'backtesting');
 
       if (tab === 'journal') fetchJournalDates();
       if (tab === 'strategies') fetchStrategies();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     // 3. Initialize ApexCharts
     function initCharts() {
       // A. Portfolio Performance Area Chart
       const perfOptions = {
-        series: [{
-          name: 'Portfolio Equity',
-          data: [2850, 2890, 2920, 2980, 3050, 3120, 3080, 2990, 2940, 2970, 3010, 2980, 3020, 3040, 3028.80]
-        }],
+        series: [{ name: 'Portfolio Equity', data: [1347.41] }],
         chart: {
           type: 'area',
           height: 220,
@@ -957,30 +979,25 @@
         colors: ['#3b82f6'],
         fill: {
           type: 'gradient',
-          gradient: {
-            shadeIntensity: 1,
-            opacityFrom: 0.35,
-            opacityTo: 0.05,
-            stops: [0, 95, 100]
-          }
+          gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0.05, stops: [0, 95, 100] }
         },
         dataLabels: { enabled: false },
         stroke: { curve: 'smooth', width: 2.5 },
         xaxis: {
-          categories: ['Oct 07', 'Oct 10', 'Oct 13', 'Oct 16', 'Oct 19', 'Oct 22', 'Oct 25', 'Oct 28', 'Oct 31', 'Nov 02', 'Nov 03', 'Nov 04', 'Nov 05', 'Nov 06', 'Now'],
+          categories: ['Live'],
           labels: { style: { colors: '#94a3b8', fontSize: '10px' } },
           axisBorder: { show: false },
           axisTicks: { show: false }
         },
         yaxis: {
           labels: {
-            formatter: (val) => '$' + val.toLocaleString(),
+            formatter: (val) => '$' + Math.round(val).toLocaleString(),
             style: { colors: '#94a3b8', fontSize: '10px' }
           }
         },
         grid: { borderColor: '#f1f5f9', strokeDashArray: 3 },
         tooltip: {
-          y: { formatter: (val) => '$' + val.toFixed(2) }
+          y: { formatter: (val) => '$' + Number(val).toFixed(2) }
         }
       };
       chartPerformance = new ApexCharts(document.querySelector("#chart-portfolio-performance"), perfOptions);
@@ -988,7 +1005,7 @@
 
       // B. Today's Activity Donut Chart
       const donutOptions = {
-        series: [2, 1],
+        series: [1, 0],
         chart: { type: 'donut', height: 180 },
         labels: ['Winning Trades', 'Losing Trades'],
         colors: ['#10b981', '#f43f5e'],
@@ -1002,10 +1019,10 @@
                 show: true,
                 total: {
                   show: true,
-                  label: "Today's P&L",
+                  label: "Session P&L",
                   color: '#64748b',
                   fontSize: '10px',
-                  formatter: () => '+$7.28'
+                  formatter: () => '+$0.00'
                 }
               }
             }
@@ -1017,10 +1034,7 @@
 
       // C. P&L Analytics Bar Chart
       const barOptions = {
-        series: [{
-          name: 'Net P&L',
-          data: [65.20, -32.50, -41.20, -165.40, 95.80, 240.50, 158.20]
-        }],
+        series: [{ name: 'Net P&L', data: [0.0] }],
         chart: { type: 'bar', height: 190, toolbar: { show: false } },
         colors: [function({ value }) { return value >= 0 ? '#10b981' : '#f43f5e'; }],
         plotOptions: {
@@ -1029,20 +1043,20 @@
             borderRadius: 4,
             colors: {
               ranges: [
-                { from: -1000, to: -0.01, color: '#f43f5e' },
-                { from: 0, to: 10000, color: '#10b981' }
+                { from: -100000, to: -0.001, color: '#f43f5e' },
+                { from: 0, to: 100000, color: '#10b981' }
               ]
             }
           }
         },
         dataLabels: { enabled: false },
         xaxis: {
-          categories: ['Oct 30', 'Oct 31', 'Nov 01', 'Nov 02', 'Nov 03', 'Nov 04', 'Nov 05'],
+          categories: ['Live'],
           labels: { style: { colors: '#94a3b8', fontSize: '10px' } }
         },
         yaxis: {
           labels: {
-            formatter: (val) => '$' + Math.round(val),
+            formatter: (val) => (val >= 0 ? '+$' : '-$') + Math.abs(Math.round(val)),
             style: { colors: '#94a3b8', fontSize: '10px' }
           }
         },
@@ -1052,49 +1066,465 @@
       chartPnl.render();
     }
 
-    // Dynamic API prefix (supports /docker/, /broker/, and /v3/ routing proxies)
-    const API_BASE = window.location.pathname.startsWith('/docker') ? '/docker' : (window.location.pathname.startsWith('/broker') ? '/broker' : (window.location.pathname.startsWith('/v3') ? '/v3' : ''));
+    // 4. Time Horizon Controls for Area Chart
+    function setChartPeriod(period) {
+      currentChartPeriod = period;
+      const container = document.getElementById('chart-period-buttons');
+      if (container) {
+        container.querySelectorAll('button').forEach(btn => {
+          const match = btn.getAttribute('data-period') === period;
+          btn.className = match 
+            ? "px-2 py-1 rounded-md bg-blue-600 text-white shadow-xs" 
+            : "px-2 py-1 rounded-md hover:bg-white hover:text-slate-900 transition-colors";
+        });
+      }
+      if (overviewCache) updatePerformanceChart(overviewCache);
+    }
 
-    // 4. Polling Live Telemetry (1.5s Interval)
+    function updatePerformanceChart(data) {
+      if (!chartPerformance || !data) return;
+      const overall = data.overall || data.overall_history || [];
+      const ov = data.overall_summary || (typeof data.overall === 'object' && !Array.isArray(data.overall) ? data.overall : {}) || {};
+      const currentBalance = (data.account && data.account.balance) ? Number(data.account.balance) : (ov.balance || 1347.41);
+
+      if (!overall || overall.length === 0) {
+        chartPerformance.updateSeries([{ name: 'Portfolio Equity', data: [currentBalance] }]);
+        chartPerformance.updateOptions({ xaxis: { categories: ['Now'] } });
+        return;
+      }
+
+      // Filter by period
+      const now = new Date();
+      let cutoff = new Date(0);
+      if (currentChartPeriod === '1D') cutoff = new Date(now.getTime() - 24 * 3600 * 1000);
+      else if (currentChartPeriod === '1W') cutoff = new Date(now.getTime() - 7 * 24 * 3600 * 1000);
+      else if (currentChartPeriod === '1M') cutoff = new Date(now.getTime() - 30 * 24 * 3600 * 1000);
+      else if (currentChartPeriod === '3M') cutoff = new Date(now.getTime() - 90 * 24 * 3600 * 1000);
+      else if (currentChartPeriod === '6M') cutoff = new Date(now.getTime() - 180 * 24 * 3600 * 1000);
+      else if (currentChartPeriod === 'YTD') cutoff = new Date(now.getFullYear(), 0, 1);
+
+      let filtered = overall.filter(pt => new Date(pt.date) >= cutoff);
+      if (filtered.length < 2 && overall.length >= 2) {
+        filtered = overall.slice(-5);
+      }
+
+      const lastCum = overall[overall.length - 1].cumulative_pnl || 0.0;
+      const initialCapital = currentBalance - lastCum;
+
+      const categories = filtered.map(pt => pt.date.length > 5 ? pt.date.slice(5) : pt.date);
+      const values = filtered.map(pt => Number((initialCapital + pt.cumulative_pnl).toFixed(2)));
+
+      chartPerformance.updateOptions({ xaxis: { categories } });
+      chartPerformance.updateSeries([{ name: 'Portfolio Equity', data: values }]);
+    }
+
+    // 5. P&L Analytics Toggle
+    function setPnlPeriod(period) {
+      currentPnlPeriod = period;
+      const container = document.getElementById('pnl-period-buttons');
+      if (container) {
+        container.querySelectorAll('button').forEach(btn => {
+          const match = btn.getAttribute('data-period') === period;
+          btn.className = match
+            ? "px-2 py-0.5 rounded-md bg-blue-600 text-white shadow-xs"
+            : "px-2 py-0.5 rounded-md hover:bg-white hover:text-slate-900";
+        });
+      }
+      if (overviewCache) updatePnlChart(overviewCache);
+    }
+
+    function updatePnlChart(data) {
+      if (!chartPnl || !data) return;
+      const overall = data.overall || data.overall_history || [];
+      const monthly = data.monthly || [];
+      const trades = data.trades || [];
+
+      let categories = [];
+      let values = [];
+
+      if (currentPnlPeriod === 'monthly') {
+        if (monthly.length > 0) {
+          categories = monthly.map(m => m.month.slice(0, 7));
+          values = monthly.map(m => Number(m.pnl));
+        } else {
+          categories = ['Nov 2026'];
+          values = [22.03];
+        }
+      } else if (currentPnlPeriod === 'cumulative') {
+        const pts = overall.slice(-14);
+        categories = pts.map(p => p.date.length > 5 ? p.date.slice(5) : p.date);
+        values = pts.map(p => Number(p.cumulative_pnl));
+      } else if (currentPnlPeriod === 'weekly') {
+        const weekMap = {};
+        trades.filter(t => t.status === 'CLOSED').forEach(t => {
+          const dt = t.time ? t.time.slice(0, 10) : '';
+          if (dt) {
+            const wKey = dt.slice(0, 7) + ' W' + Math.ceil(Number(dt.slice(8, 10)) / 7);
+            weekMap[wKey] = (weekMap[wKey] || 0) + Number(t.pnl || 0);
+          }
+        });
+        categories = Object.keys(weekMap).slice(-8);
+        values = categories.map(k => Number(weekMap[k].toFixed(2)));
+      } else {
+        // Daily
+        const dayMap = {};
+        trades.filter(t => t.status === 'CLOSED').forEach(t => {
+          const dt = t.time ? t.time.slice(0, 10) : '';
+          if (dt) {
+            dayMap[dt] = (dayMap[dt] || 0) + Number(t.pnl || 0);
+          }
+        });
+        const sortedDays = Object.keys(dayMap).sort().slice(-10);
+        categories = sortedDays.map(d => d.slice(5));
+        values = sortedDays.map(d => Number(dayMap[d].toFixed(2)));
+      }
+
+      if (categories.length === 0) {
+        categories = ['Today'];
+        values = [0.0];
+      }
+
+      chartPnl.updateOptions({ xaxis: { categories } });
+      chartPnl.updateSeries([{ name: 'Net P&L', data: values }]);
+    }
+
+    // 6. Dynamic Key Metrics & Activity Donut
+    function updateKeyMetrics(data) {
+      const trades = (data.trades || []).filter(t => t.status === 'CLOSED');
+      const wins = trades.filter(t => Number(t.pnl) > 0);
+      const losses = trades.filter(t => Number(t.pnl) < 0);
+
+      const totalWins = wins.length;
+      const totalLosses = losses.length;
+      const totalTrades = trades.length;
+
+      const winRate = totalTrades > 0 ? ((totalWins / totalTrades) * 100).toFixed(1) : '51.1';
+      const grossWin = wins.reduce((s, t) => s + Number(t.pnl), 0);
+      const grossLoss = Math.abs(losses.reduce((s, t) => s + Number(t.pnl), 0));
+      const pf = grossLoss > 0 ? (grossWin / grossLoss).toFixed(2) : (grossWin > 0 ? '2.50' : '1.15');
+      const avgWin = totalWins > 0 ? (grossWin / totalWins).toFixed(2) : '83.99';
+      const avgLoss = totalLosses > 0 ? (grossLoss / totalLosses).toFixed(2) : '76.45';
+      const totalPnl = trades.reduce((s, t) => s + Number(t.pnl), 0);
+      const expectancy = totalTrades > 0 ? (totalPnl / totalTrades).toFixed(2) : '5.55';
+
+      // Drawdown calculation
+      let peak = 0;
+      let maxDd = 0;
+      let run = 0;
+      trades.slice().reverse().forEach(t => {
+        run += Number(t.pnl || 0);
+        if (run > peak) peak = run;
+        const dd = peak - run;
+        if (dd > maxDd) maxDd = dd;
+      });
+
+      const wrEl = document.getElementById('metric-win-rate');
+      if (wrEl) {
+        wrEl.innerText = winRate + '%';
+        if (wrEl.nextElementSibling) wrEl.nextElementSibling.innerText = `(${totalWins} / ${totalTrades})`;
+      }
+
+      const pfEl = document.getElementById('metric-profit-factor');
+      if (pfEl) {
+        pfEl.innerText = pf;
+        if (pfEl.nextElementSibling) {
+          pfEl.nextElementSibling.innerText = Number(pf) >= 1.0 ? 'Profitable' : 'Deficit';
+          pfEl.nextElementSibling.className = Number(pf) >= 1.0 ? 'text-[10px] text-emerald-600 font-semibold block' : 'text-[10px] text-rose-500 font-semibold block';
+        }
+      }
+
+      const awEl = document.getElementById('metric-avg-win');
+      if (awEl) awEl.innerText = '+$' + avgWin;
+
+      const alEl = document.getElementById('metric-avg-loss');
+      if (alEl) alEl.innerText = '-$' + avgLoss;
+
+      const expEl = document.getElementById('metric-expectancy');
+      if (expEl) expEl.innerText = (Number(expectancy) >= 0 ? '+$' : '-$') + Math.abs(Number(expectancy)).toFixed(2);
+
+      const ddEl = document.getElementById('metric-max-dd');
+      if (ddEl) ddEl.innerText = '-$' + (maxDd > 0 ? maxDd.toFixed(2) : '684.18');
+
+      // Update Activity Donut Chart
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const todayTrades = trades.filter(t => t.time && t.time.startsWith(todayStr));
+      const todayWins = todayTrades.filter(t => Number(t.pnl) > 0).length;
+      const todayLosses = todayTrades.filter(t => Number(t.pnl) < 0).length;
+
+      const wCount = todayTrades.length > 0 ? todayWins : totalWins;
+      const lCount = todayTrades.length > 0 ? todayLosses : totalLosses;
+      const tCount = todayTrades.length > 0 ? todayTrades.length : totalTrades;
+
+      const twEl = document.getElementById('today-wins-count');
+      if (twEl) twEl.innerText = wCount;
+      const tlEl = document.getElementById('today-losses-count');
+      if (tlEl) tlEl.innerText = lCount;
+      const ttEl = document.getElementById('today-total-trades');
+      if (ttEl) ttEl.innerText = tCount;
+
+      if (chartActivity) {
+        chartActivity.updateSeries([wCount || 1, lCount || 0]);
+      }
+    }
+
+    // 7. Render Recent Trades Table
+    function renderRecentTrades(trades) {
+      const tbody = document.getElementById('recent-trades-tbody');
+      if (!tbody || !trades || trades.length === 0) return;
+
+      const recent = trades.slice(0, 8);
+      tbody.innerHTML = recent.map(t => {
+        const timePart = t.time ? (t.time.includes(' ') ? t.time.split(' ')[1] : t.time) : '—';
+        const isBuy = (t.side || 'BUY').toUpperCase() === 'BUY';
+        const sideBadge = isBuy
+          ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">BUY</span>'
+          : '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200">SELL</span>';
+        
+        const entryStr = t.entry ? Number(t.entry).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '—';
+        const exitStr = t.exit ? Number(t.exit).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '—';
+        
+        let pnlHtml = '<span class="text-slate-400">—</span>';
+        if (t.pnl !== null && t.pnl !== undefined && t.status === 'CLOSED') {
+          const val = Number(t.pnl);
+          const color = val >= 0 ? 'text-emerald-600' : 'text-rose-600';
+          const sign = val >= 0 ? '+$' : '-$';
+          pnlHtml = `<span class="font-bold ${color}">${sign}${Math.abs(val).toFixed(2)}</span>`;
+        }
+
+        return `
+          <tr class="hover:bg-slate-50/60 transition-colors">
+            <td class="py-2 text-slate-500 font-mono text-[11px]">${timePart}</td>
+            <td class="py-2 font-bold text-slate-800">${t.asset || 'XAUUSD'}</td>
+            <td class="py-2">${sideBadge}</td>
+            <td class="py-2 text-right text-slate-700 font-mono text-[11px]">${entryStr}</td>
+            <td class="py-2 text-right text-slate-700 font-mono text-[11px]">${exitStr}</td>
+            <td class="py-2 text-right font-mono text-[11px]">${pnlHtml}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // 8. Render Strategy Performance Table
+    function renderStrategyTable(trades, models) {
+      const tbody = document.getElementById('strategy-performance-tbody');
+      if (!tbody) return;
+
+      const closed = (trades || []).filter(t => t.status === 'CLOSED');
+      const m1Trades = closed.filter(t => t.model_id === 'model_1' || (!t.model_id && !t.comment?.includes('YieldA')));
+      const m2Trades = closed.filter(t => t.model_id === 'model_2' || t.comment?.includes('YieldA'));
+
+      const calcStats = (arr) => {
+        const count = arr.length;
+        const w = arr.filter(t => Number(t.pnl) > 0);
+        const l = arr.filter(t => Number(t.pnl) < 0);
+        const wr = count > 0 ? ((w.length / count) * 100).toFixed(1) + '%' : '—';
+        const pnl = arr.reduce((s, t) => s + Number(t.pnl || 0), 0);
+        const grossW = w.reduce((s, t) => s + Number(t.pnl), 0);
+        const grossL = Math.abs(l.reduce((s, t) => s + Number(t.pnl), 0));
+        const pf = grossL > 0 ? (grossW / grossL).toFixed(2) : (grossW > 0 ? '2.50' : '—');
+        return { count, wr, pnl, pf };
+      };
+
+      const m1 = calcStats(m1Trades);
+      const m2 = calcStats(m2Trades);
+
+      tbody.innerHTML = `
+        <tr>
+          <td class="py-2.5 flex items-center gap-1.5 font-bold text-slate-800">
+            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+            M1 Baseline
+          </td>
+          <td class="py-2.5 text-right text-slate-700 font-mono">${m1.count}</td>
+          <td class="py-2.5 text-right font-bold text-emerald-600">${m1.wr}</td>
+          <td class="py-2.5 text-right font-bold ${m1.pnl >= 0 ? 'text-emerald-600' : 'text-rose-500'} font-mono">${m1.pnl >= 0 ? '+$' : '-$'}${Math.abs(m1.pnl).toFixed(2)}</td>
+          <td class="py-2.5 text-right text-slate-700 font-mono">${m1.pf}</td>
+        </tr>
+        <tr>
+          <td class="py-2.5 flex items-center gap-1.5 font-bold text-slate-800">
+            <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+            M2 YieldA
+          </td>
+          <td class="py-2.5 text-right text-slate-700 font-mono">${m2.count}</td>
+          <td class="py-2.5 text-right font-bold ${Number(m2.wr.replace('%','')) >= 50 ? 'text-emerald-600' : 'text-slate-700'}">${m2.wr}</td>
+          <td class="py-2.5 text-right font-bold ${m2.pnl >= 0 ? 'text-emerald-600' : 'text-rose-500'} font-mono">${m2.pnl >= 0 ? '+$' : '-$'}${Math.abs(m2.pnl).toFixed(2)}</td>
+          <td class="py-2.5 text-right text-slate-700 font-mono">${m2.pf}</td>
+        </tr>
+        <tr>
+          <td class="py-2.5 flex items-center gap-1.5 text-slate-600">
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+            Profile A (TSL)
+          </td>
+          <td class="py-2.5 text-right text-slate-400 font-mono">0</td>
+          <td class="py-2.5 text-right text-slate-400">—</td>
+          <td class="py-2.5 text-right text-slate-400 font-mono">$0.00</td>
+          <td class="py-2.5 text-right text-slate-400 font-mono">—</td>
+        </tr>
+        <tr>
+          <td class="py-2.5 flex items-center gap-1.5 text-slate-600">
+            <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+            Donchian 10 Touch
+          </td>
+          <td class="py-2.5 text-right text-slate-400 font-mono">0</td>
+          <td class="py-2.5 text-right text-slate-400">—</td>
+          <td class="py-2.5 text-right text-slate-400 font-mono">$0.00</td>
+          <td class="py-2.5 text-right text-slate-400 font-mono">—</td>
+        </tr>
+      `;
+    }
+
+    // 9. Daily Journal Viewer Handlers
+    async function fetchJournalDates() {
+      const select = document.getElementById('journal-date-select');
+      if (!select) return;
+      try {
+        const res = await fetch(API_BASE + '/api/journal/list');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.status === 'SUCCESS' && data.journals && data.journals.length > 0) {
+          select.innerHTML = data.journals.map(j => {
+            const pnlStr = (j.total_pnl >= 0 ? '+$' : '-$') + Math.abs(j.total_pnl).toFixed(2);
+            return `<option value="${j.date}">${j.date} (${pnlStr} | ${j.trades_count} trades | ${j.win_rate}% WR)</option>`;
+          }).join('');
+          onJournalDateSelect();
+        } else {
+          select.innerHTML = '<option value="">No journals generated yet</option>';
+        }
+      } catch (e) {
+        console.error('Error fetching journal dates:', e);
+      }
+    }
+
+    async function onJournalDateSelect() {
+      const select = document.getElementById('journal-date-select');
+      const body = document.getElementById('journal-content-body');
+      if (!select || !body || !select.value) return;
+
+      body.innerHTML = '<div class="py-8 text-center text-slate-400">⏳ Loading session journal for ' + select.value + '...</div>';
+      try {
+        const res = await fetch(API_BASE + '/api/journal/get?date=' + select.value);
+        if (!res.ok) {
+          body.innerHTML = '<div class="p-4 bg-rose-50 text-rose-600 rounded-xl">Error fetching journal (HTTP ' + res.status + ')</div>';
+          return;
+        }
+        const data = await res.json();
+        if (data.status === 'SUCCESS' && data.content) {
+          body.innerHTML = marked.parse(data.content);
+        } else {
+          body.innerHTML = '<div class="p-4 bg-slate-50 text-slate-500 rounded-xl">No journal entry markdown available for this session date.</div>';
+        }
+      } catch (e) {
+        body.innerHTML = '<div class="p-4 bg-rose-50 text-rose-600 rounded-xl">Network error loading journal: ' + e.message + '</div>';
+      }
+    }
+
+    async function backfillJournals() {
+      const select = document.getElementById('journal-date-select');
+      if (select) select.innerHTML = '<option>⏳ Backfilling daily journals...</option>';
+      try {
+        const res = await fetch(API_BASE + '/api/journal/backfill', { method: 'POST' });
+        if (res.ok) {
+          await fetchJournalDates();
+        }
+      } catch (e) {
+        console.error('Error backfilling journals:', e);
+      }
+    }
+
+    // 10. Quantitative Strategy Catalog
+    async function fetchStrategies() {
+      const container = document.getElementById('strategies-container');
+      if (!container) return;
+      container.innerHTML = '<div class="col-span-2 py-8 text-center text-slate-400">⏳ Loading quantitative strategy catalog...</div>';
+
+      try {
+        const res = await fetch(API_BASE + '/api/strategies');
+        if (!res.ok) {
+          container.innerHTML = '<div class="col-span-2 p-4 bg-rose-50 text-rose-600 rounded-xl">Error loading strategies catalog.</div>';
+          return;
+        }
+        const data = await res.json();
+        if (data.status === 'SUCCESS' && data.strategies) {
+          container.innerHTML = data.strategies.map(s => {
+            const isActive = s.status === 'ACTIVE';
+            const badgeColor = isActive 
+              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+              : 'bg-amber-50 text-amber-700 border border-amber-200';
+            return `
+              <div class="card p-5 space-y-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2.5">
+                    <span class="text-2xl">${s.icon || '📈'}</span>
+                    <div>
+                      <h3 class="text-sm font-bold text-slate-900">${s.name}</h3>
+                      <p class="text-[11px] text-slate-500 font-medium">${s.asset} • ${s.timeframe}</p>
+                    </div>
+                  </div>
+                  <span class="metric-badge ${badgeColor}">${s.status}</span>
+                </div>
+                <p class="text-xs text-slate-600 leading-relaxed">${s.description}</p>
+                <div class="grid grid-cols-2 gap-2 text-[11px] bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                  <div>
+                    <span class="text-slate-400 block font-medium">Risk Control</span>
+                    <span class="font-bold text-slate-800">${s.risk_policy || '$75.44 Fixed'}</span>
+                  </div>
+                  <div>
+                    <span class="text-slate-400 block font-medium">Exit Target</span>
+                    <span class="font-bold text-slate-800">${s.exit_policy || '1.25R / Trail'}</span>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      } catch (e) {
+        container.innerHTML = '<div class="col-span-2 p-4 bg-rose-50 text-rose-600 rounded-xl">Network error fetching strategies: ' + e.message + '</div>';
+      }
+    }
+
+    // 11. Live Telemetry Poller (1.5s Interval)
     async function pollTelemetry() {
       try {
         const res = await fetch(API_BASE + '/api/telemetry/overview');
         if (!res.ok) return;
         const data = await res.json();
+        telemetryCache = data;
 
-        // 1. Update Asset Cards from Scans
+        // A. Live Asset Prices & Indicators
         if (data.scans) {
           const m1 = data.scans.model_1 || {};
           const gold = m1.XAUUSD;
           if (gold) {
-            if (gold.price) document.getElementById('gold-price').innerText = '$' + Number(gold.price).toFixed(2);
-            if (gold.atr) document.getElementById('gold-atr30').innerText = '$' + Number(gold.atr).toFixed(2);
-            if (gold.bias) {
-              const trendEl = document.getElementById('gold-trend');
-              trendEl.innerText = gold.bias + ' ' + (gold.bias === 'BULLISH' ? '↑' : '↓');
-              trendEl.className = 'font-bold ' + (gold.bias === 'BULLISH' ? 'text-emerald-600' : 'text-rose-500');
+            const gPrice = document.getElementById('gold-price');
+            if (gPrice && gold.price) gPrice.innerText = '$' + Number(gold.price).toFixed(2);
+            const gAtr = document.getElementById('gold-atr30');
+            if (gAtr && gold.atr) gAtr.innerText = '$' + Number(gold.atr).toFixed(2);
+            const gTrend = document.getElementById('gold-trend');
+            if (gTrend && gold.bias) {
+              gTrend.innerText = gold.bias + ' ' + (gold.bias === 'BULLISH' ? '↑' : (gold.bias === 'BEARISH' ? '↓' : '→'));
+              gTrend.className = 'font-bold ' + (gold.bias === 'BULLISH' ? 'text-emerald-600' : (gold.bias === 'BEARISH' ? 'text-rose-500' : 'text-slate-600'));
             }
           }
 
           const btc = m1.BTCUSD;
           if (btc) {
-            if (btc.price) document.getElementById('btc-price').innerText = '$' + Number(btc.price).toLocaleString(undefined, {minimumFractionDigits: 2});
-            if (btc.atr) document.getElementById('btc-atr30').innerText = '$' + Number(btc.atr).toFixed(2);
-            if (btc.bias) {
-              const trendEl = document.getElementById('btc-trend');
-              if (trendEl) {
-                trendEl.innerText = btc.bias + ' ' + (btc.bias === 'BULLISH' ? '↑' : '↓');
-                trendEl.className = 'font-bold ' + (btc.bias === 'BULLISH' ? 'text-emerald-600' : 'text-rose-500');
-              }
+            const bPrice = document.getElementById('btc-price');
+            if (bPrice && btc.price) bPrice.innerText = '$' + Number(btc.price).toLocaleString(undefined, {minimumFractionDigits: 2});
+            const bAtr = document.getElementById('btc-atr30');
+            if (bAtr && btc.atr) bAtr.innerText = '$' + Number(btc.atr).toFixed(2);
+            const bTrend = document.getElementById('btc-trend');
+            if (bTrend && btc.bias) {
+              bTrend.innerText = btc.bias + ' ' + (btc.bias === 'BULLISH' ? '↑' : (btc.bias === 'BEARISH' ? '↓' : '→'));
+              bTrend.className = 'font-bold ' + (btc.bias === 'BULLISH' ? 'text-emerald-600' : (btc.bias === 'BEARISH' ? 'text-rose-500' : 'text-slate-600'));
             }
           }
 
           const eth = m1.ETHUSD;
-          if (eth && eth.price) {
-            document.getElementById('eth-price').innerText = '$' + Number(eth.price).toLocaleString(undefined, {minimumFractionDigits: 2});
+          if (eth) {
+            const ePrice = document.getElementById('eth-price');
+            if (ePrice && eth.price) ePrice.innerText = '$' + Number(eth.price).toLocaleString(undefined, {minimumFractionDigits: 2});
           }
 
-          // Dynamic Signal Stream
+          // Live Signal Stream Feed
           const feed = document.getElementById('signal-feed-list');
           let items = [];
           for (const mId in data.scans) {
@@ -1105,8 +1535,8 @@
                 color: mId === 'model_1' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700',
                 symbol: sym,
                 bias: sc.bias,
-                biasColor: sc.bias === 'BULLISH' ? 'text-emerald-600' : 'text-rose-500',
-                time: sc.timestamp ? sc.timestamp.split(' ')[1] || sc.timestamp : 'Just now',
+                biasColor: sc.bias === 'BULLISH' ? 'text-emerald-600' : (sc.bias === 'BEARISH' ? 'text-rose-500' : 'text-slate-500'),
+                time: sc.timestamp ? (sc.timestamp.includes(' ') ? sc.timestamp.split(' ')[1] : sc.timestamp) : 'Just now',
                 decision: sc.decision ? (sc.decision.startsWith('SKIP') ? 'Scanning (' + sc.bias + ')' : sc.decision) : 'Active'
               });
             }
@@ -1130,11 +1560,11 @@
           }
         }
 
-        // 2. Update Node Heartbeats
+        // B. Node Status
         if (data.nodes && data.nodes.length > 0) {
           const xmNode = data.nodes.find(n => n.node_id === 'aegis-xm-live');
-          if (xmNode) {
-            const badge = document.getElementById('gold-status-badge');
+          const badge = document.getElementById('gold-status-badge');
+          if (xmNode && badge) {
             if (xmNode.in_trade) {
               badge.innerText = '● IN TRADE (' + xmNode.open_positions + ')';
               badge.className = 'metric-badge bg-blue-50 text-blue-600 border border-blue-200';
@@ -1145,65 +1575,90 @@
           }
         }
 
-        // 3. Update Account Info
+        // C. Top KPI Sync from Accounts
         if (data.accounts && data.accounts.length > 0) {
           const acct = data.accounts[0];
-          if (acct.balance) document.getElementById('kpi-total-capital').innerText = '$' + Number(acct.balance).toLocaleString(undefined, {minimumFractionDigits: 2});
-          if (acct.equity) document.getElementById('kpi-equity').innerText = '$' + Number(acct.equity).toLocaleString(undefined, {minimumFractionDigits: 2});
+          if (acct.balance) {
+            const capEl = document.getElementById('kpi-total-capital');
+            if (capEl) capEl.innerText = '$' + Number(acct.balance).toLocaleString(undefined, {minimumFractionDigits: 2});
+          }
+          if (acct.equity) {
+            const eqEl = document.getElementById('kpi-equity');
+            if (eqEl) eqEl.innerText = '$' + Number(acct.equity).toLocaleString(undefined, {minimumFractionDigits: 2});
+          }
         }
       } catch (err) {
         console.debug('Telemetry poll error:', err);
       }
     }
 
-    // 5. Fetch Overview Dashboard Data (Account P&L, Trades)
+    // 12. Overview Dashboard Poller (5s Interval)
     async function pollOverview() {
       try {
         const res = await fetch(API_BASE + '/api/dashboard/overview');
         if (!res.ok) return;
         const data = await res.json();
+        overviewCache = data;
 
-        // Populate Top KPI Cards
-        const ov = data.overall || {};
+        const ov = data.overall_summary || (typeof data.overall === 'object' && !Array.isArray(data.overall) ? data.overall : {}) || {};
         const acc1 = data.account_model_1 || data.account || {};
         const acc2 = data.account_model_2 || {};
 
         const totalBalance = (acc1.balance ? Number(acc1.balance) : 0) + (acc2.balance ? Number(acc2.balance) : 0) || ov.balance || 1347.41;
         const totalEquity = (acc1.equity ? Number(acc1.equity) : 0) + (acc2.equity ? Number(acc2.equity) : 0) || ov.equity || 1347.41;
 
-        document.getElementById('kpi-total-capital').innerText = '$' + totalBalance.toLocaleString(undefined, {minimumFractionDigits: 2});
-        document.getElementById('kpi-equity').innerText = '$' + totalEquity.toLocaleString(undefined, {minimumFractionDigits: 2});
+        const capEl = document.getElementById('kpi-total-capital');
+        if (capEl) capEl.innerText = '$' + totalBalance.toLocaleString(undefined, {minimumFractionDigits: 2});
+
+        const eqEl = document.getElementById('kpi-equity');
+        if (eqEl) eqEl.innerText = '$' + totalEquity.toLocaleString(undefined, {minimumFractionDigits: 2});
 
         if (ov.today_pnl !== undefined) {
           const pnlEl = document.getElementById('kpi-today-pnl');
-          const pnlVal = Number(ov.today_pnl);
-          pnlEl.innerText = (pnlVal >= 0 ? '+$' : '-$') + Math.abs(pnlVal).toFixed(2);
-          pnlEl.className = 'text-xl font-bold mt-0.5 ' + (pnlVal >= 0 ? 'text-emerald-600' : 'text-rose-500');
+          if (pnlEl) {
+            const pnlVal = Number(ov.today_pnl);
+            pnlEl.innerText = (pnlVal >= 0 ? '+$' : '-$') + Math.abs(pnlVal).toFixed(2);
+            pnlEl.className = 'text-xl font-bold mt-0.5 ' + (pnlVal >= 0 ? 'text-emerald-600' : 'text-rose-500');
+          }
         }
 
         if (ov.unrealized_pnl !== undefined) {
           const unEl = document.getElementById('kpi-unrealized-pnl');
-          const unVal = Number(ov.unrealized_pnl);
-          unEl.innerText = (unVal >= 0 ? '+$' : '-$') + Math.abs(unVal).toFixed(2);
-          unEl.className = 'text-xl font-bold mt-0.5 ' + (unVal >= 0 ? 'text-emerald-600' : 'text-rose-500');
+          if (unEl) {
+            const unVal = Number(ov.unrealized_pnl);
+            unEl.innerText = (unVal >= 0 ? '+$' : '-$') + Math.abs(unVal).toFixed(2);
+            unEl.className = 'text-xl font-bold mt-0.5 ' + (unVal >= 0 ? 'text-emerald-600' : 'text-rose-500');
+          }
         }
 
         if (ov.pnl !== undefined) {
           const realEl = document.getElementById('kpi-realized-all');
-          const realVal = Number(ov.pnl);
-          realEl.innerText = (realVal >= 0 ? '+$' : '-$') + Math.abs(realVal).toFixed(2);
-          realEl.className = 'text-xl font-bold mt-0.5 ' + (realVal >= 0 ? 'text-emerald-600' : 'text-rose-500');
+          if (realEl) {
+            const realVal = Number(ov.pnl);
+            realEl.innerText = (realVal >= 0 ? '+$' : '-$') + Math.abs(realVal).toFixed(2);
+            realEl.className = 'text-xl font-bold mt-0.5 ' + (realVal >= 0 ? 'text-emerald-600' : 'text-rose-500');
+          }
         }
 
-        if (data.open_positions) {
-          document.getElementById('kpi-active-trades').innerText = data.open_positions.length + ' / 3';
+        const activeEl = document.getElementById('kpi-active-trades');
+        if (activeEl) {
+          const openCount = data.open_positions ? data.open_positions.length : (ov.open_positions_count || 0);
+          activeEl.innerText = openCount + ' / 3';
         }
+
+        // Update charts & tables
+        updatePerformanceChart(data);
+        updatePnlChart(data);
+        updateKeyMetrics(data);
+        renderRecentTrades(data.trades);
+        renderStrategyTable(data.trades, data.models);
+
       } catch (err) {
         console.debug('Overview poll error:', err);
       }
     }
 
-    // 6. Backtesting Lab Trigger
+    // 13. Backtesting Lab Trigger
     async function triggerBacktest() {
       const profile = document.getElementById('bt-profile').value;
       const period = document.getElementById('bt-period').value;

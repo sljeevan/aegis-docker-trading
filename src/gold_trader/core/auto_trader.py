@@ -721,6 +721,41 @@ class GoldAutoTrader:
             self.log_scan(symbol, 0.0, "ACCOUNT_MISMATCH", "None", "HOLD", 0, 0.0, f"Account mismatch: connected {acct.get('account_id')} != expected {expected_acc}", {})
             return {"status": "BLOCKED", "reason": f"Account ID mismatch (connected {acct.get('account_id')} != expected {expected_acc})", "timestamp": now}
 
+        # Emit live account state to decoupled telemetry bus
+        if getattr(self, "telemetry", None) and acct:
+            try:
+                eq = float(acct.get("equity", balance))
+                unrealized = round(eq - balance, 2)
+                today_realized = 0.0
+                try:
+                    with self._db_connection() as conn:
+                        today_start = datetime.now(timezone.utc).strftime("%Y-%m-%d 00:00:00")
+                        row = conn.execute(
+                            "SELECT COALESCE(SUM(pnl), 0.0) FROM trade_executions WHERE status = 'CLOSED' AND close_time >= ?",
+                            (today_start,)
+                        ).fetchone()
+                        if row:
+                            today_realized = round(float(row[0]), 2)
+                except Exception:
+                    pass
+
+                self.telemetry.emit_account(
+                    account_id=str(acct.get("account_id") or acct.get("login") or "unknown"),
+                    broker=str(acct.get("broker") or acct.get("server") or "MT5"),
+                    balance=balance,
+                    equity=eq,
+                    free_margin=float(acct.get("free_margin", balance)),
+                    margin=float(acct.get("margin", 0.0)),
+                    currency=str(acct.get("currency", "USD")),
+                    model_id=getattr(self, "model_id", "model_1"),
+                    open_positions_count=len(self.tracked_positions),
+                    unrealized_pnl=unrealized,
+                    realized_today=today_realized,
+                    connected=True,
+                )
+            except Exception:
+                pass
+
         try:
             open_positions = self.broker.get_open_positions()
         except Exception as e:
