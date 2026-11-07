@@ -1052,8 +1052,8 @@
       chartPnl.render();
     }
 
-    // Dynamic API prefix (supports /docker/ and /v3/ routing proxies)
-    const API_BASE = window.location.pathname.startsWith('/docker') ? '/docker' : (window.location.pathname.startsWith('/v3') ? '/v3' : '');
+    // Dynamic API prefix (supports /docker/, /broker/, and /v3/ routing proxies)
+    const API_BASE = window.location.pathname.startsWith('/docker') ? '/docker' : (window.location.pathname.startsWith('/broker') ? '/broker' : (window.location.pathname.startsWith('/v3') ? '/v3' : ''));
 
     // 4. Polling Live Telemetry (1.5s Interval)
     async function pollTelemetry() {

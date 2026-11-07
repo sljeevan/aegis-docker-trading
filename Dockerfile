@@ -90,10 +90,8 @@ COPY scripts/run_trader_container.sh /app/docker/scripts/run_trader_container.sh
 
 RUN chmod +x /entrypoint.sh /app/docker/scripts/*.sh
 
-# 7. Clone Aegis Quantitative Core Engine into default source tree
-RUN git clone https://github.com/sljeevan/gold-trading-system.git /tmp/aegis-core && \
-    cp -r /tmp/aegis-core/src/* /app/src/ && \
-    rm -rf /tmp/aegis-core
+# 7. Copy Aegis Quantitative Core Engine into default source tree
+COPY src/ /app/src/
 
 # Port 8080: noVNC browser interface
 EXPOSE 8080

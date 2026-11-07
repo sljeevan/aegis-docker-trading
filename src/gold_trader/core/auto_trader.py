@@ -207,6 +207,14 @@ class GoldAutoTrader:
             self.git_sha[:8],
         )
 
+        # Telemetry Emitter (Non-blocking decoupled push layer)
+        self.model_id = os.getenv("CONTAINER_NODE_ID", "model_1")
+        try:
+            from gold_trader.telemetry.emitter import TelemetryEmitter
+            self.telemetry = TelemetryEmitter.get_instance(node_id=self.model_id)
+        except Exception:
+            self.telemetry = None
+
     @property
     def ladder_manager(self):
         """Flat Risk manager stub ensuring complete independence from compounding ladder."""
@@ -637,12 +645,49 @@ class GoldAutoTrader:
         except Exception as e:
             logger.error("Failed to write scan log: %s", e)
 
+        # Emit non-blocking telemetry event to decoupled bus
+        if getattr(self, "telemetry", None):
+            try:
+                det = (details or {}).get("setup_details", {})
+                self.telemetry.emit_scan(
+                    symbol=symbol,
+                    price=price,
+                    bias=bias,
+                    decision=decision,
+                    model_id=getattr(self, "model_id", "model_1"),
+                    setup_name=setup_name,
+                    quality_score=float(quality_score),
+                    atr=det.get("atr"),
+                    rsi=det.get("rsi"),
+                    supertrend_direction=det.get("supertrend_direction"),
+                    donchian_upper=det.get("donchian_upper"),
+                    donchian_lower=det.get("donchian_lower"),
+                    donchian_middle=det.get("donchian_middle"),
+                    reason=(det.get("reasons") or [decision])[0] if isinstance(det.get("reasons"), list) and det.get("reasons") else decision,
+                    details=details or {},
+                )
+            except Exception:
+                pass
+
     def evaluate_and_trade(self) -> Dict[str, Any]:
         """
         Execute one complete analysis, position monitoring, and automated trading cycle.
         """
         now = datetime.now(timezone.utc).isoformat()
         symbol = self.config.symbol
+
+        # Emit periodic heartbeat to decoupled telemetry bus
+        if getattr(self, "telemetry", None):
+            try:
+                self.telemetry.emit_heartbeat(
+                    symbol=symbol,
+                    status="RUNNING",
+                    model_id=getattr(self, "model_id", "model_1"),
+                    in_trade=len(self.tracked_positions) > 0,
+                    open_positions=len(self.tracked_positions),
+                )
+            except Exception:
+                pass
         
         # 0. Safety Lockout Check (Block further entries if previous trade had unverified SL/TP)
         if self._get_state("lockout") == "true" or getattr(self, "lockout", False):
@@ -1161,6 +1206,26 @@ class GoldAutoTrader:
 
                         self.tracked_positions[ticket] = trade_record
 
+                        if getattr(self, "telemetry", None):
+                            try:
+                                self.telemetry.emit_trade(
+                                    symbol=symbol,
+                                    ticket=int(ticket),
+                                    action=action,
+                                    lots=executed_lots,
+                                    entry_price=filled_price,
+                                    status="OPEN",
+                                    model_id=getattr(self, "model_id", "model_1"),
+                                    stop_loss=sl,
+                                    target_1=calc_stage1_tp,
+                                    target_2=calc_stage2_tp if self.config.enable_runner_trailing else tp2,
+                                    comment=order_comment,
+                                    tp1_taken=False,
+                                    peak_price=filled_price,
+                                )
+                            except Exception:
+                                pass
+
                         if self.config.send_telegram_alerts:
                             self.notifier.send_trade_entry(order=order_result, setup=setup)
                     elif res_status == "EMERGENCY_PROTECTION_FAILED" or order_result.get("lockout"):
@@ -1513,6 +1578,26 @@ class GoldAutoTrader:
 
                 self.tracked_positions[ticket] = trade_record
 
+                if getattr(self, "telemetry", None):
+                    try:
+                        self.telemetry.emit_trade(
+                            symbol=symbol,
+                            ticket=int(ticket),
+                            action=action,
+                            lots=executed_lots,
+                            entry_price=filled_price,
+                            status="OPEN",
+                            model_id=getattr(self, "model_id", "model_1"),
+                            stop_loss=sl,
+                            target_1=calc_stage1_tp,
+                            target_2=calc_stage2_tp if self.config.enable_runner_trailing else tp2,
+                            comment=order_comment,
+                            tp1_taken=False,
+                            peak_price=filled_price,
+                        )
+                    except Exception:
+                        pass
+
                 if self.config.send_telegram_alerts:
                     setup_alert_mock = {
                         "symbol": symbol,
@@ -1863,6 +1948,24 @@ class GoldAutoTrader:
                     (close_price, pnl, now_str, ticket),
                 )
                 conn.commit()
+
+            # Emit non-blocking trade closure to decoupled telemetry bus
+            if getattr(self, "telemetry", None):
+                try:
+                    self.telemetry.emit_trade(
+                        symbol=symbol,
+                        ticket=int(ticket),
+                        action=side,
+                        lots=lots,
+                        entry_price=entry_price,
+                        close_price=close_price,
+                        pnl=pnl,
+                        status="CLOSED",
+                        model_id=getattr(self, "model_id", "model_1"),
+                        close_time=now_str,
+                    )
+                except Exception:
+                    pass
 
             # If trade closed with a loss, enforce Loss Cooldown to prevent chop whipsaws
             loss_threshold = -1.00 if is_btc else -0.50

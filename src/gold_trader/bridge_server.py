@@ -27,24 +27,43 @@ ENV_PREFIX = "XM_DEMO"
 mt5_lock = threading.RLock()
 
 def get_env_credentials():
-    login = 168987477
-    server = "XMGlobal-MT5 2"
-    password = ""
-    env_path = "/home/mcpuser/MCP/gold-trading-system/.env"
     prefix = ENV_PREFIX
-    if os.path.exists(env_path):
-        with open(env_path, encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if line.startswith(f"{prefix}_PASSWORD="):
-                    password = line.split("=", 1)[1].strip().strip("\"'")
-                elif line.startswith(f"{prefix}_LOGIN="):
-                    try:
-                        login = int(line.split("=", 1)[1].strip().strip("\"'"))
-                    except:
-                        pass
-                elif line.startswith(f"{prefix}_SERVER="):
-                    server = line.split("=", 1)[1].strip().strip("\"'")
+    login = None
+    server = os.environ.get(f"{prefix}_SERVER", "XMGlobal-MT5 2")
+    password = os.environ.get(f"{prefix}_PASSWORD", "")
+    
+    if os.environ.get(f"{prefix}_LOGIN"):
+        try:
+            login = int(os.environ[f"{prefix}_LOGIN"])
+        except Exception:
+            pass
+
+    # Check env files
+    env_paths = [
+        os.environ.get("ENV_PATH", ""),
+        "/app/config/.env",
+        "/app/.env",
+        "/home/mcpuser/MCP/gold-trading-system/.env",
+    ]
+    for ep in env_paths:
+        if ep and os.path.exists(ep):
+            with open(ep, encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line.startswith(f"{prefix}_PASSWORD=") and not password:
+                        password = line.split("=", 1)[1].strip().strip("\"'")
+                    elif line.startswith(f"{prefix}_LOGIN=") and login is None:
+                        try:
+                            login = int(line.split("=", 1)[1].strip().strip("\"'"))
+                        except Exception:
+                            pass
+                    elif line.startswith(f"{prefix}_SERVER=") and (server == "XMGlobal-MT5 2" or not server):
+                        server = line.split("=", 1)[1].strip().strip("\"'")
+            if login is not None and password:
+                break
+
+    if login is None:
+        login = 168987477
     return login, password, server
 
 def ensure_mt5():
