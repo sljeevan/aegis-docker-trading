@@ -228,7 +228,7 @@
         <div class="card p-4 flex items-center justify-between">
           <div>
             <p class="text-xs text-slate-500 font-medium">Total Capital</p>
-            <h3 id="kpi-total-capital" class="text-xl font-bold text-slate-900 mt-0.5">$1,347.41</h3>
+            <h3 id="kpi-total-capital" class="text-xl font-bold text-slate-900 mt-0.5">$1,500.00</h3>
             <span id="kpi-capital-change" class="text-[11px] font-semibold text-slate-400 flex items-center gap-0.5 mt-0.5">
               0.00% Today
             </span>
@@ -242,7 +242,7 @@
         <div class="card p-4 flex items-center justify-between">
           <div>
             <p class="text-xs text-slate-500 font-medium">Equity</p>
-            <h3 id="kpi-equity" class="text-xl font-bold text-slate-900 mt-0.5">$1,347.41</h3>
+            <h3 id="kpi-equity" class="text-xl font-bold text-slate-900 mt-0.5">$1,500.00</h3>
             <span id="kpi-equity-change" class="text-[11px] font-semibold text-slate-400 flex items-center gap-0.5 mt-0.5">
               0.00%
             </span>
@@ -839,7 +839,7 @@
     function initCharts() {
       // A. Portfolio Performance Area Chart
       const perfOptions = {
-        series: [{ name: 'Portfolio Equity', data: [1347.41] }],
+        series: [{ name: 'Portfolio Equity', data: [1500.00] }],
         chart: {
           type: 'area',
           height: 220,
@@ -956,7 +956,7 @@
       if (!chartPerformance || !data) return;
       const overall = data.overall || data.overall_history || [];
       const ov = data.overall_summary || (typeof data.overall === 'object' && !Array.isArray(data.overall) ? data.overall : {}) || {};
-      const currentBalance = (data.account && data.account.balance) ? Number(data.account.balance) : (ov.balance || 1347.41);
+      const currentBalance = (data.account && data.account.balance) ? Number(data.account.balance) : (ov.balance || 1500.00);
 
       if (!overall || overall.length === 0) {
         chartPerformance.updateSeries([{ name: 'Portfolio Equity', data: [currentBalance] }]);
@@ -1485,8 +1485,8 @@
         const acc1 = data.account_model_1 || data.account || {};
         const acc2 = data.account_model_2 || {};
 
-        const totalBalance = (acc1.balance ? Number(acc1.balance) : 0) + (acc2.balance ? Number(acc2.balance) : 0) || ov.balance || 1347.41;
-        const totalEquity = (acc1.equity ? Number(acc1.equity) : 0) + (acc2.equity ? Number(acc2.equity) : 0) || ov.equity || 1347.41;
+        const totalBalance = (acc1.balance ? Number(acc1.balance) : 0) + (acc2.balance ? Number(acc2.balance) : 0) || ov.balance || 1500.00;
+        const totalEquity = (acc1.equity ? Number(acc1.equity) : 0) + (acc2.equity ? Number(acc2.equity) : 0) || ov.equity || 1500.00;
 
         const capEl = document.getElementById('kpi-total-capital');
         if (capEl) capEl.innerText = '$' + totalBalance.toLocaleString(undefined, {minimumFractionDigits: 2});
