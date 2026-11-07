@@ -17,79 +17,36 @@ from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger("DailyJournalEngine")
 
-DEFAULT_JOURNALS_DIR = os.getenv(
-    "JOURNALS_DIR",
-    "/app/journals" if os.path.isdir("/app/journals") else (
-        "/home/mcpuser/MCP/gold-trading-system/journals" if os.path.isdir("/home/mcpuser/MCP/gold-trading-system/journals") else "journals"
-    )
-)
-DEFAULT_JOURNAL_DB = os.path.expanduser("~/.gold_trading_data/trading_journal.db")
+DEFAULT_DATA_DIR = os.getenv("AEGIS_DATA_DIR", "/app/data" if os.path.isdir("/app/data") else "data")
+DEFAULT_JOURNALS_DIR = os.getenv("JOURNALS_DIR", "/app/reports/journals" if os.path.isdir("/app/reports") else "reports/journals")
+DEFAULT_JOURNAL_DB = os.getenv("JOURNAL_DB", os.path.join(DEFAULT_DATA_DIR, "trading_journal.db"))
 
 ASSET_REGISTRY = [
     {
-        "id": "gold_m1",
+        "id": "gold_xm_live",
         "symbol": "XAUUSD",
         "broker_symbol": "GOLD",
-        "name": "Spot Gold",
+        "name": "Spot Gold (XM Live)",
         "icon": "🟡",
-        "model": "Model 1 (Baseline)",
-        "db_path": os.path.expanduser("~/.gold_trading_data/auto_trader.db"),
-        "state_file": os.path.expanduser("~/.gold_trading_data/compounding_ladder_state.json"),
+        "model": "XM Live (Account 346439083)",
+        "db_path": os.path.join(DEFAULT_DATA_DIR, "xm_live", "trading_data", "auto_trader.db"),
+        "state_file": None,
         "contract_size": 100.0,
         "fixed_risk_usd": 75.44,
         "min_sl": 8.00,
     },
     {
-        "id": "btc_m1",
-        "symbol": "BTCUSD",
-        "broker_symbol": "BTCUSD",
-        "name": "Bitcoin",
-        "icon": "🟠",
-        "model": "Model 1 (Baseline)",
-        "db_path": os.path.expanduser("~/.gold_trading_data/btc_auto_trader.db"),
-        "state_file": os.path.expanduser("~/.gold_trading_data/btc_compounding_ladder_state.json"),
-        "contract_size": 1.0,
-        "fixed_risk_usd": 75.44,
-        "min_sl": 500.00,
-    },
-    {
-        "id": "eth_m1",
-        "symbol": "ETHUSD",
-        "broker_symbol": "ETHUSD",
-        "name": "Ethereum",
-        "icon": "🔷",
-        "model": "Model 1 (Baseline)",
-        "db_path": os.path.expanduser("~/.gold_trading_data/eth_auto_trader.db"),
-        "state_file": os.path.expanduser("~/.gold_trading_data/eth_compounding_ladder_state.json"),
-        "contract_size": 1.0,
-        "fixed_risk_usd": 75.44,
-        "min_sl": 20.00,
-    },
-    {
-        "id": "btc_m2",
-        "symbol": "BTCUSD",
-        "broker_symbol": "BTCUSD",
-        "name": "Bitcoin Yield (Profile A)",
-        "icon": "🟣",
-        "model": "Model 2 (Yield A)",
-        "db_path": os.path.expanduser("~/.gold_trading_data/yield_a_btc_auto_trader.db"),
+        "id": "gold_sandbox",
+        "symbol": "XAUUSD",
+        "broker_symbol": "GOLD",
+        "name": "Spot Gold (Sandbox)",
+        "icon": "🧪",
+        "model": "Sandbox Node",
+        "db_path": os.path.join(DEFAULT_DATA_DIR, "sandbox", "trading_data", "auto_trader.db"),
         "state_file": None,
-        "contract_size": 1.0,
-        "fixed_risk_usd": 75.44,
-        "min_sl": 500.00,
-    },
-    {
-        "id": "eth_m2",
-        "symbol": "ETHUSD",
-        "broker_symbol": "ETHUSD",
-        "name": "Ethereum Yield (Profile A)",
-        "icon": "🟣",
-        "model": "Model 2 (Yield A)",
-        "db_path": os.path.expanduser("~/.gold_trading_data/yield_a_eth_auto_trader.db"),
-        "state_file": None,
-        "contract_size": 1.0,
-        "fixed_risk_usd": 75.44,
-        "min_sl": 20.00,
+        "contract_size": 100.0,
+        "fixed_risk_usd": 100.0,
+        "min_sl": 8.00,
     },
 ]
 

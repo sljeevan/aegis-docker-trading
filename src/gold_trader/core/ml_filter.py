@@ -40,9 +40,10 @@ from gold_trader.core.macro import analyze_macro_drivers
 
 logger = logging.getLogger("GoldMLFilter")
 
-DEFAULT_GOLD_MODEL_PATH = os.path.expanduser("~/.gold_trading_data/models/gold_ml_barrier.joblib")
-DEFAULT_BTC_MODEL_PATH = os.path.expanduser("~/.gold_trading_data/models/btc_ml_barrier.joblib")
-DEFAULT_ETH_MODEL_PATH = os.path.expanduser("~/.gold_trading_data/models/eth_ml_barrier.joblib")
+_DATA_DIR = os.getenv("GOLD_TRADING_DATA_DIR", "/app/data" if os.path.isdir("/app/data") else os.path.expanduser("~/.gold_trading_data"))
+DEFAULT_GOLD_MODEL_PATH = os.path.join(_DATA_DIR, "models", "gold_ml_barrier.joblib")
+DEFAULT_BTC_MODEL_PATH = os.path.join(_DATA_DIR, "models", "btc_ml_barrier.joblib")
+DEFAULT_ETH_MODEL_PATH = os.path.join(_DATA_DIR, "models", "eth_ml_barrier.joblib")
 
 
 def extract_candle_features(

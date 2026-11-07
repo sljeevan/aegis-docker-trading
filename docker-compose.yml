@@ -42,13 +42,13 @@ services:
       - REDIS_HOST=telemetry-bus
       - REDIS_PORT=6379
       - TELEMETRY_ENABLED=true
+      - GOLD_TRADING_DATA_DIR=/app/data
+      - AEGIS_DATA_DIR=/app/data
     ports:
       - "${DOCKER_API_PORT:-8788}:8787"
     volumes:
       - ./src:/app/src:ro
-      - /home/mcpuser/.gold_trading_data:/root/.gold_trading_data:ro
-      - /home/mcpuser/MCP/gold-trading-system/journals:/app/journals:ro
-      - ./data:/app/data:ro
+      - ./data:/app/data
       - ./reports:/app/reports
     networks:
       - aegis-net

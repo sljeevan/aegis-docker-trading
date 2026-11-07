@@ -166,27 +166,25 @@ def verify_admin_access(request: Request) -> bool:
         detail="Forbidden: Remote mutation requests require AEGIS_API_KEY or AEGIS_ADMIN_KEY to be configured.",
     )
 
-DATA_DIR = os.path.expanduser("~/.gold_trading_data")
+DATA_DIR = os.getenv("AEGIS_DATA_DIR", "/app/data" if os.path.isdir("/app/data") else os.path.abspath("./data"))
 
 MODEL_CONFIGS: Dict[str, Dict[str, Any]] = {
-    "model_1": {
-        "id": "model_1",
-        "name": "Model 1: Production Baseline",
-        "short_name": "M1 Baseline",
-        "badge_color": "sky",
+    "aegis-xm-live": {
+        "id": "aegis-xm-live",
+        "name": "Aegis Docker Live Node: XM MT5 (Gold)",
+        "short_name": "XM Live",
+        "badge_color": "emerald",
         "bridge_port": 8888,
-        "account_id": "168987477",
-        "server": "XMGlobal-MT5 2",
-        "account_label": "Model 1 Baseline (XMGlobal-MT5 2)",
-        "order_tag": "Standard",
+        "account_id": "346439083",
+        "server": "XMGlobal-MT5 10",
+        "account_label": "XM Live (Account 346439083)",
+        "order_tag": "LiveGold",
         "risk_per_trade": "$75.44 Fixed",
         "tp_policy": "1.25R (+50% Cash) · 3.0R TP2 Runner",
-        "trailing_buffer": "$4.50 Gold / $350 BTC / $10 ETH",
-        "concurrency": "Uncapped (1 Trade/Bar)",
+        "trailing_buffer": "$4.50 Gold",
+        "concurrency": "1 Trade / Asset",
         "dbs": {
-            "XAUUSD": os.path.join(DATA_DIR, "auto_trader.db"),
-            "BTCUSD": os.path.join(DATA_DIR, "btc_auto_trader.db"),
-            "ETHUSD": os.path.join(DATA_DIR, "eth_auto_trader.db"),
+            "XAUUSD": os.path.join(DATA_DIR, "xm_live", "trading_data", "auto_trader.db"),
         },
         "assets": [
             {
@@ -195,80 +193,48 @@ MODEL_CONFIGS: Dict[str, Dict[str, Any]] = {
                 "venue": "XM / MetaTrader 5",
                 "unit": "lots",
                 "price_format": 2,
-                "default_mark": 4031.50,
-                "model_id": "model_1",
-                "model_name": "M1 Baseline",
+                "default_mark": 4070.76,
+                "model_id": "aegis-xm-live",
+                "model_name": "XM Live",
                 "risk_desc": "$75.44 Risk · Dynamic ATR Stop ($8 min) · $4.50 Trail",
-            },
-            {
-                "asset": "Bitcoin",
-                "symbol": "BTCUSD",
-                "venue": "XM / MetaTrader 5",
-                "unit": "BTC",
-                "price_format": 2,
-                "default_mark": 81850.0,
-                "model_id": "model_1",
-                "model_name": "M1 Baseline",
-                "risk_desc": "$75.44 Risk · Dynamic ATR Stop ($500 min) · $350 Trail",
-            },
-            {
-                "asset": "Ethereum",
-                "symbol": "ETHUSD",
-                "venue": "XM / MetaTrader 5",
-                "unit": "ETH",
-                "price_format": 2,
-                "default_mark": 2404.0,
-                "model_id": "model_1",
-                "model_name": "M1 Baseline",
-                "risk_desc": "$75.44 Risk · Dynamic ATR Stop ($20 min) · $10 Trail",
             },
         ],
     },
-    "model_2": {
-        "id": "model_2",
-        "name": "Model 2: Profile A Crypto Yield Engine",
-        "short_name": "M2 YieldA",
-        "badge_color": "purple",
+    "aegis-sandbox": {
+        "id": "aegis-sandbox",
+        "name": "Aegis Docker Sandbox Node",
+        "short_name": "Sandbox",
+        "badge_color": "sky",
         "bridge_port": 8889,
-        "account_id": "346439083",
-        "server": "XMGlobal-MT5 10",
-        "account_label": "Monthly_winsaw (XMGlobal-MT5 10)",
-        "order_tag": "YieldA",
-        "risk_per_trade": "$75.00 Fixed",
-        "tp_policy": "1.25R (+50% Cash) · 3.0R TP2 Runner",
-        "trailing_buffer": "$200 BTC / $6 ETH (Tight)",
-        "concurrency": "Max 1 Position / Asset",
-        "treasury_anchor": "$1,500.00 Monthly Watermark Harvest",
+        "account_id": "sandbox_demo",
+        "server": "MetaQuotes-Demo",
+        "account_label": "Sandbox Paper Node",
+        "order_tag": "Sandbox",
+        "risk_per_trade": "$100.00 Fixed",
+        "tp_policy": "1.5R TP · Dynamic Trail",
+        "trailing_buffer": "$5.00 Gold",
+        "concurrency": "1 Trade / Asset",
         "dbs": {
-            "BTCUSD": os.path.join(DATA_DIR, "yield_a_btc_auto_trader.db"),
-            "ETHUSD": os.path.join(DATA_DIR, "yield_a_eth_auto_trader.db"),
+            "XAUUSD": os.path.join(DATA_DIR, "sandbox", "trading_data", "auto_trader.db"),
         },
         "assets": [
             {
-                "asset": "Bitcoin (YieldA)",
-                "symbol": "BTCUSD",
-                "venue": "XM / MetaTrader 5",
-                "unit": "BTC",
+                "asset": "Gold (Sandbox)",
+                "symbol": "XAUUSD",
+                "venue": "MT5 Demo",
+                "unit": "lots",
                 "price_format": 2,
-                "default_mark": 81850.0,
-                "model_id": "model_2",
-                "model_name": "M2 YieldA",
-                "risk_desc": "$75.00 Risk · Tight Trail ($200) · ML P≥0.48 · Max 1 Pos",
-            },
-            {
-                "asset": "Ethereum (YieldA)",
-                "symbol": "ETHUSD",
-                "venue": "XM / MetaTrader 5",
-                "unit": "ETH",
-                "price_format": 2,
-                "default_mark": 2404.0,
-                "model_id": "model_2",
-                "model_name": "M2 YieldA",
-                "risk_desc": "$75.00 Risk · Tight Trail ($6) · ML P≥0.48 · Max 1 Pos",
+                "default_mark": 4070.76,
+                "model_id": "aegis-sandbox",
+                "model_name": "Sandbox",
+                "risk_desc": "$100 Risk · Dynamic ATR Trail",
             },
         ],
     },
 }
+
+MODEL_CONFIGS["model_1"] = MODEL_CONFIGS["aegis-xm-live"]
+MODEL_CONFIGS["model_2"] = MODEL_CONFIGS["aegis-sandbox"]
 
 _CACHE: Dict[str, Any] = {
     "timestamp": 0.0,
@@ -330,8 +296,9 @@ def fetch_latest_scan_telemetry() -> Dict[str, Dict[str, Any]]:
         except Exception as e:
             logger.debug("Failed reading scans from TelemetryStore: %s", e)
 
-    telemetry: Dict[str, Dict[str, Any]] = {"model_1": {}, "model_2": {}}
-    for m_id, mcfg in MODEL_CONFIGS.items():
+    telemetry: Dict[str, Dict[str, Any]] = {"model_1": {}, "model_2": {}, "aegis-xm-live": {}, "aegis-sandbox": {}}
+    for m_id in ["model_1", "model_2"]:
+        mcfg = MODEL_CONFIGS[m_id]
         for sym, path in mcfg["dbs"].items():
             if not os.path.exists(path):
                 continue
@@ -365,6 +332,8 @@ def fetch_latest_scan_telemetry() -> Dict[str, Dict[str, Any]]:
                     }
             except Exception as e:
                 logger.warning(f"Error reading scan_logs for {m_id} {sym}: {e}")
+    telemetry["aegis-xm-live"] = telemetry["model_1"]
+    telemetry["aegis-sandbox"] = telemetry["model_2"]
     return telemetry
 
 
@@ -382,94 +351,88 @@ def fetch_historic_and_pnl_data(m2_account: Optional[Dict[str, Any]] = None) -> 
     today_broker = datetime.now(BROKER_TZ).strftime("%Y-%m-%d")
     seen_trade_keys = set()
 
-    for m_id, mcfg in MODEL_CONFIGS.items():
+    for m_id in ["model_1", "model_2"]:
+        mcfg = MODEL_CONFIGS[m_id]
         for sym, path in mcfg["dbs"].items():
-            candidate_paths = [path]
-            if sym == "XAUUSD":
-                xm_live_db = "/app/data/xm_live/trading_data/auto_trader.db"
-                if os.path.exists(xm_live_db) and xm_live_db not in candidate_paths:
-                    candidate_paths.append(xm_live_db)
+            if not os.path.exists(path):
+                continue
+            try:
+                conn = connect_sqlite_ro(path, timeout=2.0)
+                cur = conn.cursor()
+                rows = cur.execute(
+                    """
+                    SELECT timestamp, ticket, symbol, action, lots, status, entry_price, close_price, pnl, comment, close_time, stop_loss, target_1, target_2, rr_ratio
+                    FROM trade_executions
+                    ORDER BY id ASC
+                    """
+                ).fetchall()
+                conn.close()
 
-            for c_path in candidate_paths:
-                if not os.path.exists(c_path):
-                    continue
-                try:
-                    conn = connect_sqlite_ro(c_path, timeout=2.0)
-                    cur = conn.cursor()
-                    rows = cur.execute(
-                        """
-                        SELECT timestamp, ticket, symbol, action, lots, status, entry_price, close_price, pnl, comment, close_time, stop_loss, target_1, target_2, rr_ratio
-                        FROM trade_executions
-                        ORDER BY id ASC
-                        """
-                    ).fetchall()
-                    conn.close()
+                for r in rows:
+                    ts, ticket, symbol, action, lots, status, entry, exit_p, pnl_val, comment, close_t, sl_val, tp1_val, tp2_val, rr_val = r
+                    trade_key = (str(ticket or ""), str(ts or ""), str(symbol or ""))
+                    if trade_key in seen_trade_keys:
+                        continue
+                    seen_trade_keys.add(trade_key)
+                    pnl = float(pnl_val or 0.0)
+                    t_str = close_t or ts
 
-                    for r in rows:
-                        ts, ticket, symbol, action, lots, status, entry, exit_p, pnl_val, comment, close_t, sl_val, tp1_val, tp2_val, rr_val = r
-                        trade_key = (str(ticket or ""), str(ts or ""), str(symbol or ""))
-                        if trade_key in seen_trade_keys:
-                            continue
-                        seen_trade_keys.add(trade_key)
-                        pnl = float(pnl_val or 0.0)
-                        t_str = close_t or ts
+                    if t_str and status == "CLOSED":
+                        try:
+                            dt_val = datetime.fromisoformat(t_str.replace("Z", "+00:00"))
+                            if dt_val.tzinfo is None:
+                                dt_val = dt_val.replace(tzinfo=timezone.utc)
+                            dt_broker = dt_val.astimezone(BROKER_TZ)
+                            dt_str = dt_broker.strftime("%Y-%m-%d")
+                            m_str = dt_broker.strftime("%Y-%m") + "-01"
+                        except Exception:
+                            dt_str = t_str[:10]
+                            m_str = t_str[:7] + "-01"
 
-                        if t_str and status == "CLOSED":
-                            try:
-                                dt_val = datetime.fromisoformat(t_str.replace("Z", "+00:00"))
-                                if dt_val.tzinfo is None:
-                                    dt_val = dt_val.replace(tzinfo=timezone.utc)
-                                dt_broker = dt_val.astimezone(BROKER_TZ)
-                                dt_str = dt_broker.strftime("%Y-%m-%d")
-                                m_str = dt_broker.strftime("%Y-%m") + "-01"
-                            except Exception:
-                                dt_str = t_str[:10]
-                                m_str = t_str[:7] + "-01"
+                        monthly_pnl_all[m_str] += pnl
+                        monthly_pnl_by_model[m_id][m_str] += pnl
 
-                            monthly_pnl_all[m_str] += pnl
-                            monthly_pnl_by_model[m_id][m_str] += pnl
+                        daily_pnl_all[dt_str] += pnl
+                        daily_pnl_by_model[m_id][dt_str] += pnl
 
-                            daily_pnl_all[dt_str] += pnl
-                            daily_pnl_by_model[m_id][dt_str] += pnl
+                        if dt_str == today_broker:
+                            today_realized_by_sym[symbol] += pnl
+                            today_realized_by_model_sym[(m_id, symbol)] += pnl
 
-                            if dt_str == today_broker:
-                                today_realized_by_sym[symbol] += pnl
-                                today_realized_by_model_sym[(m_id, symbol)] += pnl
+                    strat_desc = comment or "1H Donchian 10 Touch"
+                    if m_id == "model_2":
+                        strat_desc = f"Profile A Tight TSL ({comment or 'YieldA'})"
+                    elif "FlatRisk" in (comment or ""):
+                        strat_desc = "1H Donchian 10 Touch ($75.44)"
 
-                        strat_desc = comment or "1H Donchian 10 Touch"
-                        if m_id == "model_2":
-                            strat_desc = f"Profile A Tight TSL ({comment or 'YieldA'})"
-                        elif "FlatRisk" in (comment or ""):
-                            strat_desc = "1H Donchian 10 Touch ($75.44)"
-
-                        all_trades.append(
-                            {
-                                "time": ts[:19].replace("T", " ") if ts else "",
-                                "ticket": str(ticket or ""),
-                                "asset": symbol,
-                                "side": action,
-                                "qty": (
-                                    f"{lots:.2f} lots"
-                                    if "XAU" in symbol
-                                    else (f"{lots:.2f} BTC" if "BTC" in symbol else f"{lots:.2f} ETH")
-                                ),
-                                "status": status,
-                                "entry": round(float(entry), 2) if entry else None,
-                                "exit": round(float(exit_p), 2) if exit_p else None,
-                                "sl": round(float(sl_val), 2) if sl_val else None,
-                                "tp": round(float(tp1_val), 2) if tp1_val else None,
-                                "tp2": round(float(tp2_val), 2) if tp2_val else None,
-                                "rr": round(float(rr_val), 2) if rr_val else 1.25,
-                                "pnl": round(pnl, 2),
-                                "comment": comment or "",
-                                "model_id": m_id,
-                                "model_name": mcfg["short_name"],
-                                "model_full": mcfg["name"],
-                                "strategy": strat_desc,
-                            }
-                        )
-                except Exception as exc:
-                    logger.warning(f"Error querying {m_id} {c_path}: {exc}")
+                    all_trades.append(
+                        {
+                            "time": ts[:19].replace("T", " ") if ts else "",
+                            "ticket": str(ticket or ""),
+                            "asset": symbol,
+                            "side": action,
+                            "qty": (
+                                f"{lots:.2f} lots"
+                                if "XAU" in symbol
+                                else (f"{lots:.2f} BTC" if "BTC" in symbol else f"{lots:.2f} ETH")
+                            ),
+                            "status": status,
+                            "entry": round(float(entry), 2) if entry else None,
+                            "exit": round(float(exit_p), 2) if exit_p else None,
+                            "sl": round(float(sl_val), 2) if sl_val else None,
+                            "tp": round(float(tp1_val), 2) if tp1_val else None,
+                            "tp2": round(float(tp2_val), 2) if tp2_val else None,
+                            "rr": round(float(rr_val), 2) if rr_val else 1.25,
+                            "pnl": round(pnl, 2),
+                            "comment": comment or "",
+                            "model_id": m_id,
+                            "model_name": mcfg["short_name"],
+                            "model_full": mcfg["name"],
+                            "strategy": strat_desc,
+                        }
+                    )
+            except Exception as exc:
+                logger.warning(f"Error querying {m_id} {path}: {exc}")
 
     all_trades.sort(key=lambda x: x["time"], reverse=True)
 
@@ -630,7 +593,8 @@ def fetch_live_asset_cards(
     all_cards: List[Dict[str, Any]] = []
     cards_by_model: Dict[str, List[Dict[str, Any]]] = {"model_1": [], "model_2": []}
 
-    for m_id, mcfg in MODEL_CONFIGS.items():
+    for m_id in ["model_1", "model_2"]:
+        mcfg = MODEL_CONFIGS[m_id]
         broker_for_model = b1 if m_id == "model_1" else b2
         for item in mcfg["assets"]:
             sym = item["symbol"]
@@ -812,8 +776,9 @@ def health():
     # 2. Database Health
     db_health = {"status": "DISCONNECTED"}
     try:
-        data_dir = os.path.expanduser(os.getenv("GOLD_TRADING_DATA_DIR", "~/.gold_trading_data"))
-        db_path = os.path.join(data_dir, "auto_trader.db")
+        db_path = os.path.join(DATA_DIR, "xm_live", "trading_data", "auto_trader.db")
+        if not os.path.exists(db_path):
+            db_path = os.path.join(DATA_DIR, "auto_trader.db")
         if os.path.exists(db_path):
             conn = connect_sqlite_ro(db_path)
             cur = conn.cursor()
@@ -1023,39 +988,34 @@ def get_dashboard_overview():
             store = TelemetryStore.get_instance()
             tele_accounts = store.get_accounts()
             for tacct in tele_accounts:
-                m_id = str(tacct.get("model_id") or "model_1")
                 formatted = {
-                    "account_id": str(tacct.get("account_id") or ""),
-                    "account_name": "Model 1 Baseline" if m_id == "model_1" else "Model 2 Monthly_winsaw",
-                    "server_name": str(tacct.get("broker") or "XMGlobal-MT5"),
-                    "broker": str(tacct.get("broker") or "MT5"),
-                    "balance": float(tacct.get("balance", 0.0)),
-                    "equity": float(tacct.get("equity", 0.0)),
-                    "free_margin": float(tacct.get("free_margin", 0.0)),
+                    "account_id": str(tacct.get("account_id") or "346439083"),
+                    "account_name": "XM Live (Account 346439083)",
+                    "server_name": str(tacct.get("broker") or "XMGlobal-MT5 10"),
+                    "broker": str(tacct.get("broker") or "XM MT5"),
+                    "balance": float(tacct.get("balance", 1347.41)),
+                    "equity": float(tacct.get("equity", 1347.41)),
+                    "free_margin": float(tacct.get("free_margin", 1347.41)),
                     "margin": float(tacct.get("margin", 0.0)),
                     "currency": str(tacct.get("currency", "USD")),
                     "unrealized_pnl": float(tacct.get("unrealized_pnl", 0.0)),
                     "today_pnl": float(tacct.get("realized_today", 0.0)),
                     "open_positions": int(tacct.get("open_positions_count", 0)),
                     "connected": bool(tacct.get("connected", True)),
-                    "bridge_port": 8888 if m_id == "model_1" else 8889,
+                    "bridge_port": 8888,
                 }
-                if m_id == "model_1" and not acc1:
-                    acc1 = formatted
-                elif m_id == "model_2" and not acc2:
-                    acc2 = formatted
-                elif not acc1:
+                if not acc1:
                     acc1 = formatted
         except Exception as exc:
             logger.debug(f"TelemetryStore account check: {exc}")
 
-    # If still None, supply calibrated defaults from configuration
+    # If still None, supply calibrated defaults from Docker configuration
     if not acc1:
         acc1 = {
-            "account_id": MODEL_CONFIGS["model_1"]["account_id"],
-            "account_name": MODEL_CONFIGS["model_1"]["account_label"],
-            "server_name": MODEL_CONFIGS["model_1"]["server"],
-            "broker": "XMGlobal",
+            "account_id": "346439083",
+            "account_name": "XM Live (Account 346439083)",
+            "server_name": "XMGlobal-MT5 10",
+            "broker": "XM MT5",
             "balance": 1347.41,
             "equity": 1347.41,
             "free_margin": 1347.41,
@@ -1125,33 +1085,32 @@ def get_dashboard_overview():
         },
         "models": [
             {
-                "id": "model_1",
-                "name": "Model 1: Production Baseline",
-                "short_name": "M1 Baseline",
-                "account_id": "168987477",
-                "account_name": "Production Baseline",
-                "server": "XMGlobal-MT5 2",
+                "id": "aegis-xm-live",
+                "name": "Aegis Docker Live Node: XM MT5 (Gold)",
+                "short_name": "XM Live",
+                "account_id": "346439083",
+                "account_name": "XM Live (Account 346439083)",
+                "server": "XMGlobal-MT5 10",
                 "bridge_port": 8888,
-                "assets": ["XAUUSD", "BTCUSD", "ETHUSD"],
+                "assets": ["XAUUSD"],
                 "risk": "$75.44 Fixed",
-                "trailing": "Baseline ($4.50 Gold / $350 BTC / $10 ETH)",
-                "concurrency": "Uncapped",
-                "order_tag": "Standard",
+                "trailing": "Dynamic ATR Trail ($4.50)",
+                "concurrency": "1 Position / Asset",
+                "order_tag": "LiveGold",
             },
             {
-                "id": "model_2",
-                "name": "Model 2: Profile A Yield Engine",
-                "short_name": "M2 YieldA",
-                "account_id": "346439083",
-                "account_name": "Monthly_winsaw",
-                "server": "XMGlobal-MT5 10",
+                "id": "aegis-sandbox",
+                "name": "Aegis Docker Sandbox Node",
+                "short_name": "Sandbox",
+                "account_id": "sandbox_demo",
+                "account_name": "Sandbox Paper Node",
+                "server": "MetaQuotes-Demo",
                 "bridge_port": 8889,
-                "assets": ["BTCUSD", "ETHUSD"],
-                "risk": "$75.00 Fixed",
-                "trailing": "Tight ($200 BTC / $6 ETH)",
-                "concurrency": "Max 1 Pos / Asset",
-                "order_tag": "YieldA",
-                "treasury_anchor": "$1,500.00 Watermark Harvest",
+                "assets": ["XAUUSD"],
+                "risk": "$100.00 Fixed",
+                "trailing": "Dynamic Trail ($5.00)",
+                "concurrency": "1 Position / Asset",
+                "order_tag": "Sandbox",
             },
         ],
     }

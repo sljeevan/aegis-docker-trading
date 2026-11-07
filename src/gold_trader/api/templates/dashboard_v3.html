@@ -180,19 +180,18 @@
           </span>
         </div>
         <p class="text-xs text-slate-500 font-medium mt-0.5">
-          Dual Production Engines • Spot Gold (XAUUSD) • Bitcoin (BTC) • Ethereum (ETH) • Autonomous Execution & ML Gate
+          Decoupled Docker Cluster • Spot Gold (XAUUSD) • Account 346439083 • Autonomous Wine MT5 Trading Node
         </p>
       </div>
 
       <!-- Controls & Avatar -->
       <div class="flex items-center gap-3">
         <!-- Account / Node Filter Selector -->
-        <select id="account-selector" onchange="onAccountChange()" class="text-xs font-semibold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700 outline-none focus:ring-2 focus:ring-blue-500">
-          <option value="consolidated" selected>🌐 Consolidated Master View</option>
-          <option value="aegis-xm-live">🐳 Docker: aegis-xm-live (Acct: 346439083)</option>
-          <option value="model_1">🖥️ Host Native: Model 1 Baseline (Acct: 168987477)</option>
-          <option value="ftmo-100k">🛡️ Docker: FTMO 100k Prop Firm</option>
-          <option value="the5ers-100k">🛡️ Docker: The5ers 100k Prop Firm</option>
+        <select id="account-selector" class="text-xs font-semibold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700 outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="346439083" selected>🐳 XM Live Node (Acct: 346439083)</option>
+          <option value="sandbox">🧪 Sandbox Paper Node</option>
+          <option value="ftmo-100k">🛡️ Backtesting: FTMO 100k</option>
+          <option value="the5ers-100k">🛡️ Backtesting: The5ers 100k</option>
         </select>
 
         <!-- Live Clock -->
@@ -229,9 +228,9 @@
         <div class="card p-4 flex items-center justify-between">
           <div>
             <p class="text-xs text-slate-500 font-medium">Total Capital</p>
-            <h3 id="kpi-total-capital" class="text-xl font-bold text-slate-900 mt-0.5">$3,031.43</h3>
-            <span id="kpi-capital-change" class="text-[11px] font-semibold text-emerald-600 flex items-center gap-0.5 mt-0.5">
-              ▲ +0.24% Today
+            <h3 id="kpi-total-capital" class="text-xl font-bold text-slate-900 mt-0.5">$1,347.41</h3>
+            <span id="kpi-capital-change" class="text-[11px] font-semibold text-slate-400 flex items-center gap-0.5 mt-0.5">
+              0.00% Today
             </span>
           </div>
           <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
@@ -243,9 +242,9 @@
         <div class="card p-4 flex items-center justify-between">
           <div>
             <p class="text-xs text-slate-500 font-medium">Equity</p>
-            <h3 id="kpi-equity" class="text-xl font-bold text-slate-900 mt-0.5">$3,028.80</h3>
-            <span id="kpi-equity-change" class="text-[11px] font-semibold text-rose-500 flex items-center gap-0.5 mt-0.5">
-              ▼ -0.09%
+            <h3 id="kpi-equity" class="text-xl font-bold text-slate-900 mt-0.5">$1,347.41</h3>
+            <span id="kpi-equity-change" class="text-[11px] font-semibold text-slate-400 flex items-center gap-0.5 mt-0.5">
+              0.00%
             </span>
           </div>
           <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
@@ -257,7 +256,7 @@
         <div class="card p-4 flex items-center justify-between">
           <div>
             <p class="text-xs text-slate-500 font-medium">Today's P&L</p>
-            <h3 id="kpi-today-pnl" class="text-xl font-bold text-emerald-600 mt-0.5">+$7.28</h3>
+            <h3 id="kpi-today-pnl" class="text-xl font-bold text-slate-700 mt-0.5">+$0.00</h3>
             <span class="text-[11px] font-semibold text-slate-400 mt-0.5 block">Session Net</span>
           </div>
           <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
@@ -269,10 +268,10 @@
         <div class="card p-4 flex items-center justify-between">
           <div>
             <p class="text-xs text-slate-500 font-medium">Unrealized P&L</p>
-            <h3 id="kpi-unrealized-pnl" class="text-xl font-bold text-rose-500 mt-0.5">-$1.43</h3>
+            <h3 id="kpi-unrealized-pnl" class="text-xl font-bold text-slate-700 mt-0.5">$0.00</h3>
             <span class="text-[11px] font-semibold text-slate-400 mt-0.5 block">Open Floating</span>
           </div>
-          <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center shrink-0">
+          <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center shrink-0">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
           </div>
         </div>
@@ -281,7 +280,7 @@
         <div class="card p-4 flex items-center justify-between">
           <div>
             <p class="text-xs text-slate-500 font-medium">Realized P&L</p>
-            <h3 id="kpi-realized-all" class="text-xl font-bold text-emerald-600 mt-0.5">+$249.93</h3>
+            <h3 id="kpi-realized-all" class="text-xl font-bold text-slate-700 mt-0.5">$0.00</h3>
             <span class="text-[11px] font-semibold text-slate-400 mt-0.5 block">Closed Trades</span>
           </div>
           <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
@@ -293,7 +292,7 @@
         <div class="card p-4 flex items-center justify-between">
           <div>
             <p class="text-xs text-slate-500 font-medium">Active Trades</p>
-            <h3 id="kpi-active-trades" class="text-xl font-bold text-slate-900 mt-0.5">1 / 3</h3>
+            <h3 id="kpi-active-trades" class="text-xl font-bold text-slate-900 mt-0.5">0 / 3</h3>
             <span class="text-[11px] font-semibold text-blue-600 mt-0.5 block">Sweet Spot Cap</span>
           </div>
           <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
@@ -419,7 +418,7 @@
                 </div>
                 <div>
                   <h3 class="text-sm font-bold text-slate-900">Gold (XAUUSD)</h3>
-                  <p class="text-[11px] text-slate-400 font-medium">MT5 • XM</p>
+                  <p class="text-[11px] text-slate-400 font-medium">XM Live (Acct: 346439083)</p>
                 </div>
               </div>
               <span id="gold-status-badge" class="metric-badge bg-emerald-50 text-emerald-600 border border-emerald-200">
@@ -430,8 +429,8 @@
             <!-- Price & Sparkline -->
             <div class="flex items-baseline justify-between mt-4">
               <div>
-                <span id="gold-price" class="text-2xl font-black text-slate-900 tracking-tight">$4,045.00</span>
-                <span id="gold-change" class="text-xs font-bold text-emerald-600 ml-1.5">▲ +0.18%</span>
+                <span id="gold-price" class="text-2xl font-black text-slate-900 tracking-tight">$4,070.76</span>
+                <span id="gold-change" class="text-xs font-bold text-emerald-600 ml-1.5">● LIVE</span>
               </div>
               <div class="w-20 h-6">
                 <!-- SVG Sparkline -->
@@ -445,15 +444,15 @@
             <div class="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-slate-100 text-[11px]">
               <div>
                 <span class="text-slate-400 block font-medium">Trend (1H)</span>
-                <span id="gold-trend" class="font-bold text-rose-500">BEARISH ↓</span>
+                <span id="gold-trend" class="font-bold text-slate-600">NEUTRAL →</span>
               </div>
               <div>
                 <span class="text-slate-400 block font-medium">ATR (30m)</span>
-                <span id="gold-atr30" class="font-bold text-slate-800">$20.49</span>
+                <span id="gold-atr30" class="font-bold text-slate-800">$17.52</span>
               </div>
               <div>
-                <span class="text-slate-400 block font-medium">ATR (1h)</span>
-                <span id="gold-atr1h" class="font-bold text-slate-800">$36.90</span>
+                <span class="text-slate-400 block font-medium">Position</span>
+                <span id="gold-position-status" class="font-bold text-slate-600">Flat (0)</span>
               </div>
             </div>
           </div>
@@ -474,11 +473,11 @@
                 </div>
                 <div>
                   <h3 class="text-sm font-bold text-slate-900">Bitcoin (BTCUSD)</h3>
-                  <p class="text-[11px] text-slate-400 font-medium">MT5 • MetaTrader 5</p>
+                  <p class="text-[11px] text-slate-400 font-medium">Docker Node • Standby</p>
                 </div>
               </div>
-              <span id="btc-status-badge" class="metric-badge bg-emerald-50 text-emerald-600 border border-emerald-200">
-                ● SCANNING
+              <span id="btc-status-badge" class="metric-badge bg-slate-100 text-slate-500 border border-slate-200">
+                ● STANDBY
               </span>
             </div>
 
@@ -486,12 +485,12 @@
             <div class="flex items-baseline justify-between mt-4">
               <div>
                 <span id="btc-price" class="text-2xl font-black text-slate-900 tracking-tight">$81,850.00</span>
-                <span id="btc-change" class="text-xs font-bold text-emerald-600 ml-1.5">▲ +0.21%</span>
+                <span id="btc-change" class="text-xs font-bold text-slate-400 ml-1.5">—</span>
               </div>
               <div class="w-20 h-6">
                 <!-- SVG Sparkline -->
-                <svg class="w-full h-full text-emerald-500 stroke-current fill-none stroke-2" viewBox="0 0 100 30">
-                  <path d="M0,20 Q20,15 40,18 T80,8 T100,4"/>
+                <svg class="w-full h-full text-orange-400 stroke-current fill-none stroke-2" viewBox="0 0 100 30">
+                  <path d="M0,15 Q20,18 40,15 T80,18 T100,15"/>
                 </svg>
               </div>
             </div>
@@ -500,22 +499,22 @@
             <div class="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-slate-100 text-[11px]">
               <div>
                 <span class="text-slate-400 block font-medium">Trend (1H)</span>
-                <span id="btc-trend" class="font-bold text-rose-500">BEARISH ↓</span>
+                <span id="btc-trend" class="font-bold text-slate-600">STANDBY</span>
               </div>
               <div>
                 <span class="text-slate-400 block font-medium">ATR (30m)</span>
-                <span id="btc-atr30" class="font-bold text-slate-800">$594.39</span>
+                <span id="btc-atr30" class="font-bold text-slate-800">—</span>
               </div>
               <div>
-                <span class="text-slate-400 block font-medium">ATR (1h)</span>
-                <span id="btc-atr1h" class="font-bold text-slate-800">$301.00</span>
+                <span class="text-slate-400 block font-medium">Position</span>
+                <span id="btc-position-status" class="font-bold text-slate-600">Flat (0)</span>
               </div>
             </div>
           </div>
 
           <!-- Footer Setup Badge -->
           <div class="bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-[10px] text-slate-600 font-medium flex items-center gap-1.5">
-            <span>⚙️</span> Setup: $75.44 Risk • ATR Stop ($500 min) • $350 Trail
+            <span>⚙️</span> Setup: $75.00 Risk • Prop Firm Staging
           </div>
         </div>
 
@@ -529,63 +528,48 @@
                 </div>
                 <div>
                   <h3 class="text-sm font-bold text-slate-900">Ethereum (ETHUSD)</h3>
-                  <p class="text-[11px] text-slate-400 font-medium">MT5 • MetaTrader 5</p>
+                  <p class="text-[11px] text-slate-400 font-medium">Docker Node • Standby</p>
                 </div>
               </div>
-              <span id="eth-status-badge" class="metric-badge bg-emerald-50 text-emerald-600 border border-emerald-200">
-                ● IN TRADE
+              <span id="eth-status-badge" class="metric-badge bg-slate-100 text-slate-500 border border-slate-200">
+                ● STANDBY
               </span>
             </div>
 
             <!-- Price & Sparkline -->
             <div class="flex items-baseline justify-between mt-4">
               <div>
-                <span id="eth-price" class="text-2xl font-black text-slate-900 tracking-tight">$2,232.59</span>
-                <span id="eth-change" class="text-xs font-bold text-rose-500 ml-1.5">▼ -0.06%</span>
+                <span id="eth-price" class="text-2xl font-black text-slate-900 tracking-tight">$2,404.00</span>
+                <span id="eth-change" class="text-xs font-bold text-slate-400 ml-1.5">—</span>
               </div>
               <div class="w-20 h-6">
                 <!-- SVG Sparkline -->
-                <svg class="w-full h-full text-indigo-500 stroke-current fill-none stroke-2" viewBox="0 0 100 30">
-                  <path d="M0,10 Q25,25 50,15 T100,22"/>
+                <svg class="w-full h-full text-indigo-400 stroke-current fill-none stroke-2" viewBox="0 0 100 30">
+                  <path d="M0,15 Q25,18 50,15 T100,15"/>
                 </svg>
               </div>
             </div>
 
-            <!-- In-Trade Position Details -->
-            <div class="grid grid-cols-4 gap-1 mt-4 pt-3 border-t border-slate-100 text-[10px]">
+            <!-- Indicator Regime Specs -->
+            <div class="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-slate-100 text-[11px]">
+              <div>
+                <span class="text-slate-400 block font-medium">Trend (1H)</span>
+                <span id="eth-trend" class="font-bold text-slate-600">STANDBY</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block font-medium">ATR (30m)</span>
+                <span id="eth-atr30" class="font-bold text-slate-800">—</span>
+              </div>
               <div>
                 <span class="text-slate-400 block font-medium">Position</span>
-                <span class="font-bold text-rose-500">SELL 1.93</span>
-              </div>
-              <div>
-                <span class="text-slate-400 block font-medium">Entry</span>
-                <span class="font-bold text-slate-800">$2,231.85</span>
-              </div>
-              <div>
-                <span class="text-slate-400 block font-medium">Stop</span>
-                <span class="font-bold text-rose-600">$2,270.94</span>
-              </div>
-              <div>
-                <span class="text-slate-400 block font-medium">Target</span>
-                <span class="font-bold text-emerald-600">$2,114.58</span>
-              </div>
-            </div>
-
-            <!-- Progress Bar -->
-            <div class="mt-3">
-              <div class="flex items-center justify-between text-[10px] font-semibold text-slate-500 mb-1">
-                <span>TP1 Progress</span>
-                <span class="text-emerald-600 font-bold">48%</span>
-              </div>
-              <div class="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-                <div class="h-full bg-emerald-500 rounded-full" style="width: 48%"></div>
+                <span id="eth-position-status" class="font-bold text-slate-600">Flat (0)</span>
               </div>
             </div>
           </div>
 
           <!-- Footer Setup Badge -->
           <div class="bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-[10px] text-slate-600 font-medium flex items-center gap-1.5">
-            <span>⚙️</span> Setup: $75.44 Risk • ADX≥22 Guard • $10 Trail
+            <span>⚙️</span> Setup: $75.00 Risk • Prop Firm Staging
           </div>
         </div>
 
@@ -600,64 +584,8 @@
           </div>
 
           <div id="signal-feed-list" class="space-y-2.5 text-xs overflow-y-auto max-h-48 pr-1">
-            <!-- Signal 1 -->
-            <div class="p-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="text-[10px] font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">M1</span>
-                <div>
-                  <span class="font-bold text-slate-900">ETHUSD</span>
-                  <span class="font-bold text-rose-500 ml-1">SELL</span>
-                </div>
-              </div>
-              <div class="text-right">
-                <span class="text-[10px] text-slate-400 block">10:09:26</span>
-                <span class="text-[10px] text-emerald-600 font-bold">✓ Executed</span>
-              </div>
-            </div>
-
-            <!-- Signal 2 -->
-            <div class="p-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="text-[10px] font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded">M2</span>
-                <div>
-                  <span class="font-bold text-slate-900">ETHUSD</span>
-                  <span class="font-bold text-rose-500 ml-1">SELL</span>
-                </div>
-              </div>
-              <div class="text-right">
-                <span class="text-[10px] text-slate-400 block">09:31:37</span>
-                <span class="text-[10px] text-emerald-600 font-bold">✓ Executed</span>
-              </div>
-            </div>
-
-            <!-- Signal 3 -->
-            <div class="p-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="text-[10px] font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">M1</span>
-                <div>
-                  <span class="font-bold text-slate-900">BTCUSD</span>
-                  <span class="font-bold text-rose-500 ml-1">SELL</span>
-                </div>
-              </div>
-              <div class="text-right">
-                <span class="text-[10px] text-slate-400 block">Yesterday</span>
-                <span class="text-[10px] text-rose-500 font-bold">✓ Closed (-$75.90)</span>
-              </div>
-            </div>
-
-            <!-- Signal 4 -->
-            <div class="p-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="text-[10px] font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">M1</span>
-                <div>
-                  <span class="font-bold text-slate-900">XAUUSD</span>
-                  <span class="font-bold text-emerald-600 ml-1">BUY</span>
-                </div>
-              </div>
-              <div class="text-right">
-                <span class="text-[10px] text-slate-400 block">Yesterday</span>
-                <span class="text-[10px] text-emerald-600 font-bold">✓ Closed (+$114.72)</span>
-              </div>
+            <div class="p-3 bg-slate-50 border border-slate-100 rounded-xl text-center text-slate-400 text-xs">
+              Awaiting next bar scan...
             </div>
           </div>
         </div>
@@ -707,44 +635,14 @@
               </thead>
               <tbody id="strategy-performance-tbody" class="divide-y divide-slate-100 font-medium">
                 <tr>
-                  <td class="py-2.5 flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-                    M1 Baseline
+                  <td class="py-2.5 flex items-center gap-1.5 font-bold text-slate-800">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    XM Live (346439083)
                   </td>
-                  <td class="py-2.5 text-right text-slate-700">3,524</td>
-                  <td class="py-2.5 text-right font-bold text-emerald-600">51.8%</td>
-                  <td class="py-2.5 text-right font-bold text-emerald-600">+$143.72</td>
-                  <td class="py-2.5 text-right text-slate-700">1.18</td>
-                </tr>
-                <tr>
-                  <td class="py-2.5 flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-purple-500"></span>
-                    M2 YieldA
-                  </td>
-                  <td class="py-2.5 text-right text-slate-700">679</td>
-                  <td class="py-2.5 text-right font-bold text-slate-700">49.2%</td>
-                  <td class="py-2.5 text-right font-bold text-rose-500">-$37.46</td>
-                  <td class="py-2.5 text-right text-slate-700">0.92</td>
-                </tr>
-                <tr>
-                  <td class="py-2.5 flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-                    Profile A (TSL)
-                  </td>
-                  <td class="py-2.5 text-right text-slate-400">0</td>
-                  <td class="py-2.5 text-right text-slate-400">—</td>
-                  <td class="py-2.5 text-right text-slate-400">$0.00</td>
-                  <td class="py-2.5 text-right text-slate-400">—</td>
-                </tr>
-                <tr>
-                  <td class="py-2.5 flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-slate-400"></span>
-                    Donchian 10 Touch
-                  </td>
-                  <td class="py-2.5 text-right text-slate-400">0</td>
-                  <td class="py-2.5 text-right text-slate-400">—</td>
-                  <td class="py-2.5 text-right text-slate-400">$0.00</td>
-                  <td class="py-2.5 text-right text-slate-400">—</td>
+                  <td class="py-2.5 text-right text-slate-700 font-mono">0</td>
+                  <td class="py-2.5 text-right font-bold text-slate-400">—</td>
+                  <td class="py-2.5 text-right font-bold text-slate-700 font-mono">$0.00</td>
+                  <td class="py-2.5 text-right text-slate-400 font-mono">—</td>
                 </tr>
               </tbody>
             </table>
@@ -774,36 +672,9 @@
               </thead>
               <tbody id="recent-trades-tbody" class="divide-y divide-slate-100 font-medium">
                 <tr>
-                  <td class="py-2 text-slate-500">10:09:26</td>
-                  <td class="py-2 font-bold text-slate-800">ETHUSD</td>
-                  <td class="py-2"><span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200">SELL</span></td>
-                  <td class="py-2 text-right text-slate-700">2,231.85</td>
-                  <td class="py-2 text-right text-slate-400">—</td>
-                  <td class="py-2 text-right font-bold text-slate-400">—</td>
-                </tr>
-                <tr>
-                  <td class="py-2 text-slate-500">09:31:37</td>
-                  <td class="py-2 font-bold text-slate-800">BTCUSD</td>
-                  <td class="py-2"><span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200">SELL</span></td>
-                  <td class="py-2 text-right text-slate-700">75,418.85</td>
-                  <td class="py-2 text-right text-slate-700">76,367.65</td>
-                  <td class="py-2 text-right font-bold text-rose-600">-$75.90</td>
-                </tr>
-                <tr>
-                  <td class="py-2 text-slate-500">Yesterday</td>
-                  <td class="py-2 font-bold text-slate-800">ETHUSD</td>
-                  <td class="py-2"><span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200">SELL</span></td>
-                  <td class="py-2 text-right text-slate-700">2,274.32</td>
-                  <td class="py-2 text-right text-slate-700">2,231.78</td>
-                  <td class="py-2 text-right font-bold text-emerald-600">+$83.18</td>
-                </tr>
-                <tr>
-                  <td class="py-2 text-slate-500">Yesterday</td>
-                  <td class="py-2 font-bold text-slate-800">XAUUSD</td>
-                  <td class="py-2"><span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">BUY</span></td>
-                  <td class="py-2 text-right text-slate-700">4,068.27</td>
-                  <td class="py-2 text-right text-slate-700">4,111.49</td>
-                  <td class="py-2 text-right font-bold text-emerald-600">+$114.72</td>
+                  <td colspan="6" class="py-6 text-center text-slate-400 text-xs">
+                    No active positions or closed trades yet for this Docker node (Account 346439083).
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -1270,7 +1141,17 @@
     // 7. Render Recent Trades Table
     function renderRecentTrades(trades) {
       const tbody = document.getElementById('recent-trades-tbody');
-      if (!tbody || !trades || trades.length === 0) return;
+      if (!tbody) return;
+      if (!trades || trades.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="py-6 text-center text-slate-400 text-xs">
+              No active positions or closed trades yet for this Docker node (Account 346439083).
+            </td>
+          </tr>
+        `;
+        return;
+      }
 
       const recent = trades.slice(0, 8);
       tbody.innerHTML = recent.map(t => {
@@ -1310,8 +1191,8 @@
       if (!tbody) return;
 
       const closed = (trades || []).filter(t => t.status === 'CLOSED');
-      const m1Trades = closed.filter(t => t.model_id === 'model_1' || (!t.model_id && !t.comment?.includes('YieldA')));
-      const m2Trades = closed.filter(t => t.model_id === 'model_2' || t.comment?.includes('YieldA'));
+      const m1Trades = closed.filter(t => t.model_id === 'model_1' || t.model_id === 'aegis-xm-live' || (!t.model_id && !t.comment?.includes('YieldA')));
+      const m2Trades = closed.filter(t => t.model_id === 'model_2' || t.model_id === 'aegis-sandbox' || t.comment?.includes('YieldA'));
 
       const calcStats = (arr) => {
         const count = arr.length;
@@ -1331,8 +1212,8 @@
       tbody.innerHTML = `
         <tr>
           <td class="py-2.5 flex items-center gap-1.5 font-bold text-slate-800">
-            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-            M1 Baseline
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            XM Live (346439083)
           </td>
           <td class="py-2.5 text-right text-slate-700 font-mono">${m1.count}</td>
           <td class="py-2.5 text-right font-bold text-emerald-600">${m1.wr}</td>
@@ -1341,8 +1222,8 @@
         </tr>
         <tr>
           <td class="py-2.5 flex items-center gap-1.5 font-bold text-slate-800">
-            <span class="w-2 h-2 rounded-full bg-purple-500"></span>
-            M2 YieldA
+            <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+            Sandbox (Demo)
           </td>
           <td class="py-2.5 text-right text-slate-700 font-mono">${m2.count}</td>
           <td class="py-2.5 text-right font-bold ${Number(m2.wr.replace('%','')) >= 50 ? 'text-emerald-600' : 'text-slate-700'}">${m2.wr}</td>
@@ -1352,7 +1233,7 @@
         <tr>
           <td class="py-2.5 flex items-center gap-1.5 text-slate-600">
             <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-            Profile A (TSL)
+            Profile A (Dynamic ATR)
           </td>
           <td class="py-2.5 text-right text-slate-400 font-mono">0</td>
           <td class="py-2.5 text-right text-slate-400">—</td>
@@ -1531,8 +1412,8 @@
             for (const sym in data.scans[mId]) {
               const sc = data.scans[mId][sym];
               items.push({
-                model: mId === 'model_1' ? 'M1' : 'M2',
-                color: mId === 'model_1' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700',
+                model: (mId === 'model_1' || mId === 'aegis-xm-live') ? 'XM Live' : 'Sandbox',
+                color: (mId === 'model_1' || mId === 'aegis-xm-live') ? 'bg-emerald-100 text-emerald-800' : 'bg-sky-100 text-sky-800',
                 symbol: sym,
                 bias: sc.bias,
                 biasColor: sc.bias === 'BULLISH' ? 'text-emerald-600' : (sc.bias === 'BEARISH' ? 'text-rose-500' : 'text-slate-500'),
