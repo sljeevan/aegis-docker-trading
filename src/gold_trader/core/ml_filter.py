@@ -40,10 +40,24 @@ from gold_trader.core.macro import analyze_macro_drivers
 
 logger = logging.getLogger("GoldMLFilter")
 
-_DATA_DIR = os.getenv("GOLD_TRADING_DATA_DIR", "/app/data" if os.path.isdir("/app/data") else os.path.expanduser("~/.gold_trading_data"))
-DEFAULT_GOLD_MODEL_PATH = os.path.join(_DATA_DIR, "models", "gold_ml_barrier.joblib")
-DEFAULT_BTC_MODEL_PATH = os.path.join(_DATA_DIR, "models", "btc_ml_barrier.joblib")
-DEFAULT_ETH_MODEL_PATH = os.path.join(_DATA_DIR, "models", "eth_ml_barrier.joblib")
+def _resolve_model_path(filename: str) -> str:
+    """Resolve model bundle path checking all standard locations (host and docker container paths)."""
+    candidates = [
+        os.path.join(os.getenv("GOLD_TRADING_DATA_DIR", ""), "models", filename),
+        os.path.join("/app/data", "models", filename),
+        os.path.join("/app/data/trading_data", "models", filename),
+        os.path.expanduser(f"~/.gold_trading_data/models/{filename}"),
+        os.path.join("/home/mcpuser/.gold_trading_data/models", filename),
+    ]
+    for c in candidates:
+        if c and os.path.exists(c):
+            return c
+    _default_dir = os.getenv("GOLD_TRADING_DATA_DIR", "/app/data" if os.path.isdir("/app/data") else os.path.expanduser("~/.gold_trading_data"))
+    return os.path.join(_default_dir, "models", filename)
+
+DEFAULT_GOLD_MODEL_PATH = _resolve_model_path("gold_ml_barrier.joblib")
+DEFAULT_BTC_MODEL_PATH = _resolve_model_path("btc_ml_barrier.joblib")
+DEFAULT_ETH_MODEL_PATH = _resolve_model_path("eth_ml_barrier.joblib")
 
 
 def extract_candle_features(
@@ -360,9 +374,13 @@ class GoldMLPredictor:
 
     def _load_cached_model(self) -> bool:
         if not os.path.exists(self.model_path):
-            self.model = None
-            self.metadata = {"status": "NOT_FOUND", "error": f"Model file not found at {self.model_path}"}
-            return False
+            resolved = _resolve_model_path(os.path.basename(self.model_path))
+            if os.path.exists(resolved):
+                self.model_path = resolved
+            else:
+                self.model = None
+                self.metadata = {"status": "NOT_FOUND", "error": f"Model file not found at {self.model_path}"}
+                return False
         try:
             bundle = joblib.load(self.model_path)
             if not isinstance(bundle, dict) or "model" not in bundle:

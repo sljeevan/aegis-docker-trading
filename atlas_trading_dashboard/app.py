@@ -222,6 +222,19 @@ def render_asset_card(col, a):
         is_open = a.get("status") == "IN TRADE"
         status_label = "🟢 IN TRADE" if is_open else "⚪ SCANNING"
         pnl = float(a.get("unrealized_pnl") or 0)
+        # Live recalculation if mark and entry are present
+        if is_open and a.get("entry") and a.get("mark"):
+            try:
+                ep = float(a["entry"])
+                mp = float(a["mark"])
+                qty = float(a.get("quantity") or 0.01)
+                side = str(a.get("side", "BUY")).upper()
+                sym = str(a.get("symbol", "")).upper()
+                mult = 100.0 if "XAU" in sym else 1.0
+                if mp > 0 and ep > 0:
+                    pnl = round((mp - ep) * qty * mult if side == "BUY" else (ep - mp) * qty * mult, 2)
+            except Exception:
+                pass
         is_m1 = a.get("model_id") == "model_1"
         badge_html = "<span class='badge-m1'>M1 Baseline</span>" if is_m1 else "<span class='badge-m2'>M2 YieldA</span>"
 

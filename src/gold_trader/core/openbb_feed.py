@@ -6,14 +6,20 @@ Provides:
 2. Macro Confluence Driver: fetches US Treasury Yield Curves (10Y, 2Y, spread) and Fed data.
 3. Crypto Volatility & Derivatives: fetches Deribit BTC Volatility Index (DVOL).
 4. Institutional Positioning: CFTC Commitment of Traders (COT) for Gold and Bitcoin.
-5. 100% Fail-safe: Graceful fallback if OpenBB or external API is offline.
+5. Microservice Client Architecture: seamlessly queries Aegis OpenBB microservice container (port 8789)
+   with local memory micro-caching (<1ms) and graceful local fallback if offline.
+6. 100% Fail-safe: Graceful fallback if OpenBB or external API is offline.
 """
 from __future__ import annotations
 
 import logging
+import os
 import threading
+import time
 from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List, Optional
+
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -43,9 +49,28 @@ _MACRO_CACHE: Dict[str, Any] = {"timestamp": 0.0, "data": {}}
 _CACHE_TTL_CALENDAR_SECONDS = 900.0  # 15 minutes
 _CACHE_TTL_MACRO_SECONDS = 1800.0   # 30 minutes
 
+# Microservice Discovery & Client Cache Configuration
+_SERVICE_CONFIGURED_URL = os.environ.get("OPENBB_SERVICE_URL", "").strip().rstrip("/")
+_DEFAULT_CANDIDATE_URLS = [
+    "http://openbb-service:8789",
+    "http://aegis-openbb:8789",
+    "http://127.0.0.1:8789",
+    "http://localhost:8789",
+]
+
+_SERVICE_LOCK = threading.Lock()
+_RESOLVED_SERVICE_URL: Optional[str] = None
+_LAST_SERVICE_PROBE_TIME: float = 0.0
+_SERVICE_PROBE_INTERVAL: float = 30.0  # Re-probe every 30s if offline or finding service
+
+# Client-side fast microcache (avoids HTTP requests within the same tick cycle)
+_CLIENT_NEWS_MICROCACHE: Dict[str, Any] = {"timestamp": 0.0, "buffer": 0, "result": None}
+_CLIENT_MACRO_MICROCACHE: Dict[str, Any] = {"timestamp": 0.0, "result": None}
+_MICROCACHE_TTL_SECONDS = 5.0  # 5 seconds
+
 
 def get_obb_instance():
-    """Lazily load and return the OpenBB singleton."""
+    """Lazily load and return the OpenBB singleton for local execution."""
     global _OPENBB_OBB
     if _OPENBB_OBB is None:
         with _INIT_LOCK:
@@ -53,11 +78,54 @@ def get_obb_instance():
                 try:
                     from openbb import obb
                     _OPENBB_OBB = obb
-                    logger.info("OpenBB platform initialized successfully.")
+                    logger.info("OpenBB platform initialized successfully (local).")
                 except Exception as e:
-                    logger.warning("OpenBB platform unavailable: %s", e)
+                    logger.debug("OpenBB local platform unavailable: %s", e)
                     return None
     return _OPENBB_OBB
+
+
+def _get_active_service_url() -> Optional[str]:
+    """
+    Resolve the active OpenBB microservice URL.
+    Checks environment variable first, then probes default candidates.
+    Caches successful endpoint to eliminate lookup overhead.
+    """
+    global _RESOLVED_SERVICE_URL, _LAST_SERVICE_PROBE_TIME
+    now = time.time()
+
+    if _RESOLVED_SERVICE_URL and (now - _LAST_SERVICE_PROBE_TIME < _SERVICE_PROBE_INTERVAL):
+        return _RESOLVED_SERVICE_URL
+
+    with _SERVICE_LOCK:
+        # Double-check inside lock
+        if _RESOLVED_SERVICE_URL and (now - _LAST_SERVICE_PROBE_TIME < _SERVICE_PROBE_INTERVAL):
+            return _RESOLVED_SERVICE_URL
+
+        _LAST_SERVICE_PROBE_TIME = now
+
+        # 1. If explicit URL is supplied in environment, prioritize it
+        candidates = []
+        if _SERVICE_CONFIGURED_URL:
+            candidates.append(_SERVICE_CONFIGURED_URL)
+        candidates.extend([c for c in _DEFAULT_CANDIDATE_URLS if c != _SERVICE_CONFIGURED_URL])
+
+        for url in candidates:
+            try:
+                resp = requests.get(f"{url}/health", timeout=0.8)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    if data.get("service") in ("aegis-openbb-gateway", "aegis-openbb-service") or data.get("status") == "healthy":
+                        if _RESOLVED_SERVICE_URL != url:
+                            logger.info("Connected to Aegis OpenBB microservice at %s", url)
+                        _RESOLVED_SERVICE_URL = url
+                        return _RESOLVED_SERVICE_URL
+            except Exception:
+                continue
+
+        # If none succeeded
+        _RESOLVED_SERVICE_URL = None
+        return None
 
 
 def check_high_impact_news_window(
@@ -77,11 +145,45 @@ def check_high_impact_news_window(
             "upcoming_events": List[Dict]
         }
     """
+    global _CLIENT_NEWS_MICROCACHE
+    now_ts = time.time()
+
+    # Fast client-side micro-cache check (if custom_now is not set and buffer matches)
+    if custom_now is None:
+        if (
+            _CLIENT_NEWS_MICROCACHE["result"] is not None
+            and _CLIENT_NEWS_MICROCACHE["buffer"] == buffer_minutes
+            and (now_ts - _CLIENT_NEWS_MICROCACHE["timestamp"] < _MICROCACHE_TTL_SECONDS)
+        ):
+            return _CLIENT_NEWS_MICROCACHE["result"]
+
+    # 1. Query Aegis OpenBB Microservice if reachable
+    service_url = _get_active_service_url()
+    if service_url:
+        try:
+            params = {"buffer_minutes": buffer_minutes}
+            if custom_now:
+                params["custom_now"] = custom_now.isoformat()
+            
+            resp = requests.get(f"{service_url}/api/v1/news-catalyst-guard", params=params, timeout=2.0)
+            if resp.status_code == 200:
+                result = resp.json()
+                if custom_now is None:
+                    _CLIENT_NEWS_MICROCACHE = {
+                        "timestamp": now_ts,
+                        "buffer": buffer_minutes,
+                        "result": result,
+                    }
+                return result
+        except Exception as e:
+            logger.debug("OpenBB microservice query error (%s). Falling back to local/cached data.", e)
+
+    # 2. Local fallback evaluation if service is unreachable
     now = custom_now or datetime.now(timezone.utc)
     events = _get_cached_economic_calendar()
 
     if not events:
-        return {
+        fallback_res = {
             "is_in_news_window": False,
             "minutes_to_nearest_event": 999.0,
             "event_title": "None",
@@ -89,6 +191,9 @@ def check_high_impact_news_window(
             "action": "TRADE_ALLOWED",
             "upcoming_events": [],
         }
+        if custom_now is None:
+            _CLIENT_NEWS_MICROCACHE = {"timestamp": now_ts, "buffer": buffer_minutes, "result": fallback_res}
+        return fallback_res
 
     nearest_event = None
     min_abs_diff = float("inf")
@@ -99,44 +204,55 @@ def check_high_impact_news_window(
         if not ev_time:
             continue
         try:
-            diff_minutes = (ev_time - now).total_seconds() / 60.0
+            if isinstance(ev_time, str):
+                ev_time_dt = datetime.fromisoformat(ev_time)
+                if ev_time_dt.tzinfo is None:
+                    ev_time_dt = ev_time_dt.replace(tzinfo=timezone.utc)
+            else:
+                ev_time_dt = ev_time
+
+            diff_minutes = (ev_time_dt - now).total_seconds() / 60.0
             abs_diff = abs(diff_minutes)
             if abs_diff < min_abs_diff:
                 min_abs_diff = abs_diff
-                nearest_event = (ev, diff_minutes)
+                nearest_event = (ev, diff_minutes, ev_time_dt)
 
-            # Check if within the blackout buffer (-buffer_minutes <= diff <= +buffer_minutes)
             if -buffer_minutes <= diff_minutes <= buffer_minutes:
                 is_in_window = True
         except Exception:
             continue
 
     if is_in_window and nearest_event:
-        ev_obj, diff_m = nearest_event
-        ev_time = ev_obj.get("time_utc")
-        return {
+        ev_obj, diff_m, ev_dt = nearest_event
+        res = {
             "is_in_news_window": True,
-            "minutes_to_nearest_event": diff_m,
+            "minutes_to_nearest_event": round(diff_m, 1),
             "event_title": ev_obj.get("title", "High-Impact Catalyst"),
-            "event_time_utc": ev_time.strftime("%Y-%m-%d %H:%M UTC") if hasattr(ev_time, "strftime") else str(ev_time or ""),
+            "event_time_utc": ev_dt.strftime("%Y-%m-%d %H:%M UTC") if hasattr(ev_dt, "strftime") else str(ev_dt),
             "action": "PAUSE",
             "upcoming_events": [ev for ev in events[:5]],
         }
+        if custom_now is None:
+            _CLIENT_NEWS_MICROCACHE = {"timestamp": now_ts, "buffer": buffer_minutes, "result": res}
+        return res
 
     nearest_ev_obj = nearest_event[0] if nearest_event else None
-    nearest_time = nearest_ev_obj.get("time_utc") if nearest_ev_obj else None
-    return {
+    nearest_time = nearest_event[2] if nearest_event else None
+    res = {
         "is_in_news_window": False,
-        "minutes_to_nearest_event": nearest_event[1] if nearest_event else 999.0,
+        "minutes_to_nearest_event": round(nearest_event[1], 1) if nearest_event else 999.0,
         "event_title": nearest_ev_obj.get("title", "None") if nearest_ev_obj else "None",
-        "event_time_utc": nearest_time.strftime("%Y-%m-%d %H:%M UTC") if hasattr(nearest_time, "strftime") else str(nearest_time or ""),
+        "event_time_utc": nearest_time.strftime("%Y-%m-%d %H:%M UTC") if nearest_time and hasattr(nearest_time, "strftime") else "",
         "action": "TRADE_ALLOWED",
         "upcoming_events": [ev for ev in events[:5]],
     }
+    if custom_now is None:
+        _CLIENT_NEWS_MICROCACHE = {"timestamp": now_ts, "buffer": buffer_minutes, "result": res}
+    return res
 
 
 def _get_cached_economic_calendar() -> List[Dict[str, Any]]:
-    """Retrieve filtered high-impact calendar events with TTL cache."""
+    """Retrieve filtered high-impact calendar events with TTL cache (local execution)."""
     global _CALENDAR_CACHE
     now_ts = datetime.now(timezone.utc).timestamp()
 
@@ -189,7 +305,6 @@ def _get_cached_economic_calendar() -> List[Dict[str, Any]]:
     except Exception as e:
         logger.debug("FRED economic calendar query notice: %s", e)
 
-    # Sort upcoming events chronologically
     events.sort(key=lambda x: x["time_utc"] if x.get("time_utc") else datetime.max.replace(tzinfo=timezone.utc))
 
     _CALENDAR_CACHE = {
@@ -201,20 +316,52 @@ def _get_cached_economic_calendar() -> List[Dict[str, Any]]:
 
 def fetch_openbb_macro_data() -> Dict[str, Any]:
     """
-    Fetch comprehensive macroeconomic data from OpenBB:
+    Fetch comprehensive macroeconomic data:
     1. US Treasury Yield Curve (10Y, 2Y, 3M, 10Y-2Y spread)
     2. Bitcoin Option-Implied Volatility (Deribit DVOL)
     3. COMEX Gold Institutional COT positioning
     """
-    global _MACRO_CACHE
-    now_ts = datetime.now(timezone.utc).timestamp()
+    global _CLIENT_MACRO_MICROCACHE, _MACRO_CACHE
+    now_ts = time.time()
 
+    # Fast client-side microcache
+    if (
+        _CLIENT_MACRO_MICROCACHE["result"] is not None
+        and (now_ts - _CLIENT_MACRO_MICROCACHE["timestamp"] < _MICROCACHE_TTL_SECONDS)
+    ):
+        return _CLIENT_MACRO_MICROCACHE["result"]
+
+    # 1. Query Aegis OpenBB Microservice if reachable
+    service_url = _get_active_service_url()
+    if service_url:
+        try:
+            resp = requests.get(f"{service_url}/api/v1/macro-confluence", timeout=2.0)
+            if resp.status_code == 200:
+                result = resp.json()
+                _CLIENT_MACRO_MICROCACHE = {"timestamp": now_ts, "result": result}
+                return result
+        except Exception as e:
+            logger.debug("OpenBB microservice macro query error (%s). Falling back to local/cached data.", e)
+
+    # 2. Local fallback evaluation
     if _MACRO_CACHE["data"] and (now_ts - _MACRO_CACHE["timestamp"] < _CACHE_TTL_MACRO_SECONDS):
         return _MACRO_CACHE["data"]
 
     obb = get_obb_instance()
     if not obb:
-        return _MACRO_CACHE.get("data", {})
+        fallback_data = _MACRO_CACHE.get("data", {
+            "yield_10y": None,
+            "yield_2y": None,
+            "yield_3m": None,
+            "yield_spread_10y_2y": None,
+            "yield_curve_inverted": False,
+            "btc_dvol": None,
+            "gold_cot_net_speculative": None,
+            "macro_confluence_score": 0,
+            "signals": [],
+        })
+        _CLIENT_MACRO_MICROCACHE = {"timestamp": now_ts, "result": fallback_data}
+        return fallback_data
 
     data: Dict[str, Any] = {
         "yield_10y": None,
@@ -237,7 +384,6 @@ def fetch_openbb_macro_data() -> Dict[str, Any]:
             mat = str(getattr(r, "maturity", "")).lower()
             val = getattr(r, "rate", None)
             if val is not None:
-                # rate might be in decimal (e.g. 0.0477) or percent (4.77)
                 rate_pct = val * 100.0 if val < 1.0 else val
                 rate_map[mat] = rate_pct
 
@@ -299,6 +445,7 @@ def fetch_openbb_macro_data() -> Dict[str, Any]:
         "timestamp": now_ts,
         "data": data,
     }
+    _CLIENT_MACRO_MICROCACHE = {"timestamp": now_ts, "result": data}
     return data
 
 
@@ -307,12 +454,9 @@ def _parse_fed_calendar_datetime(date_str: Optional[str], time_str: Optional[str
     if not date_str:
         return None
     try:
-        # Expected date_str: '2026-10-19', time_str: '4:15 p.m.' or '12:00 p.m.'
         time_clean = (time_str or "12:00 p.m.").strip().lower().replace(".", "")
         dt_str = f"{date_str} {time_clean}"
         dt = datetime.strptime(dt_str, "%Y-%m-%d %I:%M %p")
-        # Fed releases are in US Eastern Time (UTC-4 in Daylight Saving, UTC-5 in Standard)
-        # Approximate as US Eastern (UTC-4)
         return dt.replace(tzinfo=timezone(timedelta(hours=-4))).astimezone(timezone.utc)
     except Exception:
         try:

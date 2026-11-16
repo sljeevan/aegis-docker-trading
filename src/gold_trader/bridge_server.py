@@ -22,8 +22,8 @@ except ImportError:
 
 HOST = "127.0.0.1"
 PORT = 8888
-PATH = r"C:\Program Files\XM Global MT5\terminal64.exe"
-ENV_PREFIX = "XM_DEMO"
+PATH = os.environ.get("WINE_TERMINAL_PATH", r"Z:\app\data\terminal\terminal64.exe")
+ENV_PREFIX = os.environ.get("ACCOUNT_PREFIX", "XM_DEMO")
 mt5_lock = threading.RLock()
 
 def get_env_credentials():
@@ -69,6 +69,12 @@ def get_env_credentials():
 def ensure_mt5():
     if mt5 is None:
         return False
+    try:
+        term = mt5.terminal_info()
+        if term is not None and getattr(term, "connected", False):
+            return True
+    except Exception:
+        pass
     login, password, server = get_env_credentials()
     if not mt5.initialize(path=PATH, login=login, password=password, server=server, timeout=60000):
         print(f"[{datetime.now()}] mt5.initialize failed: {mt5.last_error()}", flush=True)
@@ -318,13 +324,16 @@ def process_bridge_command(req: Dict[str, Any]) -> Dict[str, Any]:
             lots = float(req.get("lots", req.get("volume", 0.01)))
             sl = float(req.get("sl", 0.0)) if req.get("sl") else 0.0
             tp = float(req.get("tp", 0.0)) if req.get("tp") else 0.0
-            comment = req.get("comment", "GoldTrader-AI")
+            comment = str(req.get("comment") or "GoldTrader-AI")
             client_order_id = str(req.get("client_order_id", "")).strip()
             if client_order_id:
-                if len(comment) + len(client_order_id) + 1 <= 31:
-                    comment = f"{comment}_{client_order_id}"
-                else:
-                    comment = f"{comment[:21]}_{client_order_id[:8]}"
+                # MT5 Python strictly rejects comment lengths >= 30 chars (-2, 'Invalid "comment" argument').
+                # Cap total comment length to <= 27 characters for universal broker compatibility.
+                cid = client_order_id[:8]
+                prefix = comment[:18]
+                comment = f"{prefix}_{cid}"
+            else:
+                comment = comment[:27]
             
             mt5.symbol_select(symbol, True)
             info = mt5.symbol_info(symbol)

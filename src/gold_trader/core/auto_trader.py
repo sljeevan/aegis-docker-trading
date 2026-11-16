@@ -383,6 +383,89 @@ class GoldAutoTrader:
         # 2. Manage existing open positions (Trailing SL / Breakeven / Partial scale out)
         managed_actions = self._manage_open_positions(open_positions)
 
+        # 3. Emit in-trade live telemetry to decoupled message bus (Redis)
+        if getattr(self, "telemetry", None) and acct:
+            try:
+                eq = float(acct.get("equity", balance))
+                unrealized = round(eq - balance, 2)
+                today_realized = 0.0
+                try:
+                    with self._db_connection() as conn:
+                        today_start = datetime.now(timezone.utc).strftime("%Y-%m-%d 00:00:00")
+                        row = conn.execute(
+                            "SELECT COALESCE(SUM(pnl), 0.0) FROM trade_executions WHERE status = 'CLOSED' AND close_time >= ?",
+                            (today_start,)
+                        ).fetchone()
+                        if row:
+                            today_realized = round(float(row[0]), 2)
+                except Exception:
+                    pass
+
+                self.telemetry.emit_heartbeat(
+                    symbol=symbol,
+                    status="RUNNING",
+                    model_id=getattr(self, "model_id", "model_1"),
+                    in_trade=len(sym_open_positions) > 0,
+                    open_positions=len(sym_open_positions),
+                )
+
+                self.telemetry.emit_account(
+                    account_id=str(acct.get("account_id") or acct.get("login") or "unknown"),
+                    broker=str(acct.get("broker") or acct.get("server") or "MT5"),
+                    balance=balance,
+                    equity=eq,
+                    free_margin=float(acct.get("free_margin", balance)),
+                    margin=float(acct.get("margin", 0.0)),
+                    currency=str(acct.get("currency", "USD")),
+                    model_id=getattr(self, "model_id", "model_1"),
+                    open_positions_count=len(sym_open_positions),
+                    unrealized_pnl=unrealized,
+                    realized_today=today_realized,
+                    connected=True,
+                )
+
+                for p in sym_open_positions:
+                    p_ticket = int(p.get("ticket", 0))
+                    p_cur_p = float(p.get("current_price", 0.0))
+                    p_op_p = float(p.get("open_price", 0.0))
+                    p_lots = float(p.get("lots", 0.01))
+                    p_side = str(p.get("side", "BUY")).upper()
+                    p_pnl = round(float(p.get("pnl") if p.get("pnl") is not None else p.get("profit", 0.0)), 2)
+                    p_sl = float(p.get("sl")) if p.get("sl") else None
+                    p_tp = float(p.get("tp")) if p.get("tp") else None
+                    p_cmt = str(p.get("comment", ""))
+
+                    if p_cur_p > 0:
+                        self.telemetry.emit_scan(
+                            symbol=symbol,
+                            price=p_cur_p,
+                            bias="BULLISH" if p_side == "BUY" else "BEARISH",
+                            decision=f"IN TRADE #{p_ticket}: {p_side} {p_lots:.2f}L | Floating PnL: ${p_pnl:+.2f} | Mark: ${p_cur_p:.2f}",
+                            model_id=getattr(self, "model_id", "model_1"),
+                            setup_name=f"IN_TRADE_{p_side}",
+                            quality_score=100.0,
+                            reason=f"Active in-market trade #{p_ticket} ({p_side} {p_lots:.2f}L). Floating PnL: ${p_pnl:+.2f}.",
+                        )
+
+                    self.telemetry.emit_trade(
+                        symbol=symbol,
+                        ticket=p_ticket,
+                        action=p_side,
+                        lots=p_lots,
+                        entry_price=p_op_p,
+                        status="OPEN",
+                        model_id=getattr(self, "model_id", "model_1"),
+                        account_id=str(acct.get("account_id") or acct.get("login") or "unknown"),
+                        current_price=p_cur_p,
+                        stop_loss=p_sl,
+                        target_1=p_tp,
+                        pnl=p_pnl,
+                        unrealized_pnl=p_pnl,
+                        comment=p_cmt,
+                    )
+            except Exception as tel_err:
+                logger.debug("Failed to emit in-trade telemetry: %s", tel_err)
+
         return {
             "status": "FAST_MANAGE",
             "timestamp": now,
@@ -1161,7 +1244,15 @@ class GoldAutoTrader:
                         else:
                             tp2 = tp1
 
-                    order_comment = f"{self.config.order_tag}-{symbol}" if self.config.order_tag else f"AI-FlatRisk-{symbol}"
+                    if self.config.order_tag:
+                        if symbol in self.config.order_tag or f"_{symbol[:3]}" in self.config.order_tag:
+                            order_comment = self.config.order_tag
+                        elif len(f"{self.config.order_tag}-{symbol}") <= 18:
+                            order_comment = f"{self.config.order_tag}-{symbol}"
+                        else:
+                            order_comment = self.config.order_tag
+                    else:
+                        order_comment = f"AI-FlatRisk-{symbol}"
                     actual_tp = tp2 if (self.config.enable_partial_scale_out or self.config.enable_runner_trailing or self.config.mode in ("DONCHIAN_BREAKOUT", "DONCHIAN_MOMENTUM_HYBRID", "HYBRID")) and tp2 else tp1
                     order_result = self.broker.place_order(
                         symbol="GOLD" if "GOLD" in symbol else symbol,
@@ -1534,7 +1625,15 @@ class GoldAutoTrader:
             tp1 = round(broker_entry - tp1_dist, 2)
             tp2 = round(broker_entry - tp2_dist, 2) if self.config.enable_runner_trailing else tp1
 
-        order_comment = f"{self.config.order_tag}-{symbol}" if self.config.order_tag else f"AI-FlatRisk-{symbol}"
+        if self.config.order_tag:
+            if symbol in self.config.order_tag or f"_{symbol[:3]}" in self.config.order_tag:
+                order_comment = self.config.order_tag
+            elif len(f"{self.config.order_tag}-{symbol}") <= 18:
+                order_comment = f"{self.config.order_tag}-{symbol}"
+            else:
+                order_comment = self.config.order_tag
+        else:
+            order_comment = f"AI-FlatRisk-{symbol}"
         actual_tp = tp2 if (self.config.enable_partial_scale_out or self.config.enable_runner_trailing) and tp2 else tp1
 
         try:
@@ -1852,43 +1951,50 @@ class GoldAutoTrader:
                 elif tracked.get("tp1_taken", 0) and self.config.enable_runner_trailing:
                     current_sl_val = float(sl) if sl is not None else (open_price + be_offset if side == "BUY" else open_price - be_offset)
                     target_2_val = target_2 or tracked.get("target_2") or p.get("tp")
+                    now_utc = datetime.now(timezone.utc)
 
-                    if side == "BUY":
-                        trailed_sl = round(peak_price - trail_buffer, 2)
-                        if trailed_sl >= current_sl_val + be_offset and trailed_sl >= open_price + be_offset:
-                            res = self.broker.modify_position(ticket=ticket, sl=trailed_sl, tp=target_2_val)
-                            if res.get("status") == "SUCCESS":
-                                tracked["stop_loss"] = trailed_sl
-                                msg = f"Trailed Runner SL to ${trailed_sl} for Ticket #{ticket}"
-                                actions_taken.append(msg)
-                                logger.info(msg)
-                                if self.config.send_telegram_alerts:
-                                    self.notifier.send_trade_update(
-                                        ticket=ticket,
-                                        symbol=symbol,
-                                        update_type="Runner Trailing SL Advanced 🏃",
-                                        details=f"Peak reached ${peak_price:.2f}. Trailed Stop-Loss advanced to ${trailed_sl:.2f} (+$ {trailed_sl - open_price:.2f} profit locked).",
-                                    )
-                            else:
-                                logger.warning("Runner trailing modification failed for #%s: %s", ticket, res.get("message"))
-                    else:  # SELL
-                        trailed_sl = round(peak_price + trail_buffer, 2)
-                        if trailed_sl <= current_sl_val - be_offset and trailed_sl <= open_price - be_offset:
-                            res = self.broker.modify_position(ticket=ticket, sl=trailed_sl, tp=target_2_val)
-                            if res.get("status") == "SUCCESS":
-                                tracked["stop_loss"] = trailed_sl
-                                msg = f"Trailed Runner SL to ${trailed_sl} for Ticket #{ticket}"
-                                actions_taken.append(msg)
-                                logger.info(msg)
-                                if self.config.send_telegram_alerts:
-                                    self.notifier.send_trade_update(
-                                        ticket=ticket,
-                                        symbol=symbol,
-                                        update_type="Runner Trailing SL Advanced 🏃",
-                                        details=f"Peak dropped to ${peak_price:.2f}. Trailed Stop-Loss advanced to ${trailed_sl:.2f} (+$ {open_price - trailed_sl:.2f} profit locked).",
-                                    )
-                            else:
-                                logger.warning("Runner trailing modification failed for #%s: %s", ticket, res.get("message"))
+                    # Spread-Aware Trailing Protection: Avoid tightening runner SL during rollover window
+                    # (21:00 - 23:00 UTC) when broker spreads artificially widen and clip stops
+                    is_rollover = (not (is_btc or is_eth)) and (21 <= now_utc.hour <= 22 or (now_utc.hour == 23 and now_utc.minute < 5))
+                    if is_rollover:
+                        logger.debug("Rollover window active (%02d:%02d UTC). Pausing trailing stop advancement for #%s to prevent spread-spike stopout.", now_utc.hour, now_utc.minute, ticket)
+                    else:
+                        if side == "BUY":
+                            trailed_sl = round(peak_price - trail_buffer, 2)
+                            if trailed_sl >= current_sl_val + be_offset and trailed_sl >= open_price + be_offset:
+                                res = self.broker.modify_position(ticket=ticket, sl=trailed_sl, tp=target_2_val)
+                                if res.get("status") == "SUCCESS":
+                                    tracked["stop_loss"] = trailed_sl
+                                    msg = f"Trailed Runner SL to ${trailed_sl} for Ticket #{ticket}"
+                                    actions_taken.append(msg)
+                                    logger.info(msg)
+                                    if self.config.send_telegram_alerts:
+                                        self.notifier.send_trade_update(
+                                            ticket=ticket,
+                                            symbol=symbol,
+                                            update_type="Runner Trailing SL Advanced 🏃",
+                                            details=f"Peak reached ${peak_price:.2f}. Trailed Stop-Loss advanced to ${trailed_sl:.2f} (+$ {trailed_sl - open_price:.2f} profit locked).",
+                                        )
+                                else:
+                                    logger.warning("Runner trailing modification failed for #%s: %s", ticket, res.get("message"))
+                        else:  # SELL
+                            trailed_sl = round(peak_price + trail_buffer, 2)
+                            if trailed_sl <= current_sl_val - be_offset and trailed_sl <= open_price - be_offset:
+                                res = self.broker.modify_position(ticket=ticket, sl=trailed_sl, tp=target_2_val)
+                                if res.get("status") == "SUCCESS":
+                                    tracked["stop_loss"] = trailed_sl
+                                    msg = f"Trailed Runner SL to ${trailed_sl} for Ticket #{ticket}"
+                                    actions_taken.append(msg)
+                                    logger.info(msg)
+                                    if self.config.send_telegram_alerts:
+                                        self.notifier.send_trade_update(
+                                            ticket=ticket,
+                                            symbol=symbol,
+                                            update_type="Runner Trailing SL Advanced 🏃",
+                                            details=f"Peak dropped to ${peak_price:.2f}. Trailed Stop-Loss advanced to ${trailed_sl:.2f} (+$ {open_price - trailed_sl:.2f} profit locked).",
+                                        )
+                                else:
+                                    logger.warning("Runner trailing modification failed for #%s: %s", ticket, res.get("message"))
 
                 # Persist updated tracking state to database
                 with self._db_connection() as conn:

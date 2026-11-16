@@ -24,7 +24,11 @@ class AccountProfile:
     min_rr: float = 1.25
     scale_out_r: float = 1.25
     runner_trail_buffer: float = 4.50
-    runner_target_2_multiplier: float = 2.00
+    runner_trail_buffer_mult: float = 1.0
+    runner_target_2_multiplier: float = 3.00
+    donchian_period: int = 10
+    sl_atr_mult: Optional[float] = None
+    adx_min: Optional[float] = None
     max_positions: int = 2
     max_unhedged_positions: int = 1
     allow_runner_compounding: bool = True
@@ -32,7 +36,17 @@ class AccountProfile:
     enable_ml_filter: bool = False
     ml_threshold: float = 0.50
     enable_session_filter: bool = True
+    max_daily_trades: int = 6
     commission_per_lot: float = 0.0
+
+    # Production Parity & Discrepancy Elimination Parameters
+    enable_news_guard: bool = True
+    news_guard_buffer_minutes: int = 15
+    enable_dynamic_spreads: bool = True
+    use_subbar_resolution: bool = True
+    subbar_timeframe: str = "5m"
+    one_trade_per_bar: bool = True
+    loss_cooldown_bars: int = 1
 
     # Prop Firm Compliance Parameters
     is_prop_firm: bool = False
@@ -64,16 +78,23 @@ PROFILE_PRESETS: Dict[str, Dict[str, Any]] = {
         "starting_balance": 1000.0,
         "risk_mode": "FLAT_USD",
         "fixed_risk_usd": 75.44,
-        "min_rr": 2.00,
+        "min_rr": 1.25,
         "scale_out_r": 1.25,
         "runner_trail_buffer": 4.50,
-        "runner_target_2_multiplier": 2.00,
+        "runner_target_2_multiplier": 3.00,
         "commission_per_lot": 0.0,
         "is_prop_firm": False,
         "max_daily_loss_pct": 25.0,  # $250 soft daily stop
         "daily_circuit_breaker_pct": 15.0,
         "max_total_drawdown_pct": 100.0,
         "trailing_drawdown": False,
+        "enable_news_guard": True,
+        "news_guard_buffer_minutes": 15,
+        "enable_dynamic_spreads": True,
+        "use_subbar_resolution": True,
+        "subbar_timeframe": "5m",
+        "one_trade_per_bar": True,
+        "loss_cooldown_bars": 1,
     },
     "ftmo_100k": {
         "account_prefix": "FTMO",
@@ -84,7 +105,7 @@ PROFILE_PRESETS: Dict[str, Dict[str, Any]] = {
         "min_rr": 1.25,
         "scale_out_r": 1.25,
         "runner_trail_buffer": 4.50,
-        "runner_target_2_multiplier": 2.00,
+        "runner_target_2_multiplier": 3.00,
         "commission_per_lot": 3.00,  # $3/lot round-turn prop commission
         "is_prop_firm": True,
         "max_daily_loss_pct": 5.00,  # $5,000 max daily loss
@@ -104,7 +125,7 @@ PROFILE_PRESETS: Dict[str, Dict[str, Any]] = {
         "min_rr": 1.25,
         "scale_out_r": 1.25,
         "runner_trail_buffer": 4.50,
-        "runner_target_2_multiplier": 2.00,
+        "runner_target_2_multiplier": 3.00,
         "commission_per_lot": 0.0,  # Spread-only
         "is_prop_firm": True,
         "max_daily_loss_pct": 3.00,  # $3,000 max daily loss limit
@@ -124,7 +145,7 @@ PROFILE_PRESETS: Dict[str, Dict[str, Any]] = {
         "min_rr": 1.25,
         "scale_out_r": 1.25,
         "runner_trail_buffer": 4.50,
-        "runner_target_2_multiplier": 2.00,
+        "runner_target_2_multiplier": 3.00,
         "commission_per_lot": 2.00,
         "is_prop_firm": True,
         "max_daily_loss_pct": 4.00,  # 4% daily loss
@@ -151,6 +172,13 @@ PROFILE_PRESETS: Dict[str, Dict[str, Any]] = {
         "daily_circuit_breaker_pct": 15.0,
         "max_total_drawdown_pct": 100.0,
         "trailing_drawdown": False,
+        "enable_news_guard": True,
+        "news_guard_buffer_minutes": 15,
+        "enable_dynamic_spreads": True,
+        "use_subbar_resolution": True,
+        "subbar_timeframe": "5m",
+        "one_trade_per_bar": True,
+        "loss_cooldown_bars": 1,
     },
 }
 
@@ -187,10 +215,12 @@ def load_profile(
     # Base attributes from presets if available
     base_data: Dict[str, Any] = PROFILE_PRESETS.get(profile_key, {}).copy()
 
-    # Check for corresponding .env file in docker/configs/
+    # Check for corresponding .env file in configs/ or docker/configs/
     potential_paths = [
         Path(profile_name_or_path),
+        Path("configs") / f"{profile_key}.env",
         Path("docker/configs") / f"{profile_key}.env",
+        Path("/home/mcpuser/MCP/aegis-docker-trading/configs") / f"{profile_key}.env",
         Path("/home/mcpuser/MCP/gold-trading-system/docker/configs") / f"{profile_key}.env",
     ]
     env_file = None
@@ -203,8 +233,10 @@ def load_profile(
         env_vars = _parse_env_file(env_file)
         if "ACCOUNT_PREFIX" in env_vars:
             base_data["account_prefix"] = env_vars["ACCOUNT_PREFIX"]
-        if "SYMBOL" in env_vars:
-            base_data["symbols"] = [env_vars["SYMBOL"]]
+        if "SYMBOLS" in env_vars:
+            base_data["symbols"] = [s.strip().upper() for s in env_vars["SYMBOLS"].split(",") if s.strip()]
+        elif "SYMBOL" in env_vars:
+            base_data["symbols"] = [env_vars["SYMBOL"].strip().upper()]
         if "RISK_MODE" in env_vars:
             base_data["risk_mode"] = env_vars["RISK_MODE"].upper()
         if "FIXED_RISK_USD" in env_vars:
@@ -231,6 +263,22 @@ def load_profile(
             base_data["enable_ml_filter"] = env_vars["ENABLE_ML_FILTER"].lower() == "true"
         if "ENABLE_SESSION_FILTER" in env_vars:
             base_data["enable_session_filter"] = env_vars["ENABLE_SESSION_FILTER"].lower() == "true"
+        if "ENABLE_NEWS_GUARD" in env_vars:
+            base_data["enable_news_guard"] = env_vars["ENABLE_NEWS_GUARD"].lower() == "true"
+        if "NEWS_GUARD_BUFFER_MINUTES" in env_vars:
+            base_data["news_guard_buffer_minutes"] = int(env_vars["NEWS_GUARD_BUFFER_MINUTES"])
+        if "ENABLE_DYNAMIC_SPREADS" in env_vars:
+            base_data["enable_dynamic_spreads"] = env_vars["ENABLE_DYNAMIC_SPREADS"].lower() == "true"
+        if "USE_SUBBAR_RESOLUTION" in env_vars:
+            base_data["use_subbar_resolution"] = env_vars["USE_SUBBAR_RESOLUTION"].lower() == "true"
+        if "SUBBAR_TIMEFRAME" in env_vars:
+            base_data["subbar_timeframe"] = env_vars["SUBBAR_TIMEFRAME"].strip().lower()
+        if "ONE_TRADE_PER_BAR" in env_vars:
+            base_data["one_trade_per_bar"] = env_vars["ONE_TRADE_PER_BAR"].lower() == "true"
+        if "LOSS_COOLDOWN_MINUTES" in env_vars:
+            base_data["loss_cooldown_bars"] = max(1, int(int(env_vars["LOSS_COOLDOWN_MINUTES"]) / 60))
+        elif "LOSS_COOLDOWN_BARS" in env_vars:
+            base_data["loss_cooldown_bars"] = int(env_vars["LOSS_COOLDOWN_BARS"])
 
     # Default fallback values if neither preset nor .env provided everything
     base_data.setdefault("name", profile_key)

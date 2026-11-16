@@ -1,0 +1,31 @@
+# syntax=docker/dockerfile:1
+FROM python:3.11-slim
+
+LABEL maintainer="Aegis Alpha Quantitative Team"
+LABEL description="Aegis Centralized OpenBB Macro & Catalyst Data Gateway"
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app/src \
+    PORT=8789
+
+WORKDIR /app
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl netcat-traditional && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY requirements-openbb.txt /app/requirements-openbb.txt
+
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r /app/requirements-openbb.txt && \
+    python3 -c "from openbb import obb; print('OpenBB platform pre-initialized successfully')"
+
+COPY src/ /app/src/
+
+EXPOSE 8789
+
+HEALTHCHECK --interval=20s --timeout=5s --retries=3 \
+  CMD curl -f http://localhost:8789/health || exit 1
+
+CMD ["python3", "-m", "uvicorn", "gold_trader.services.openbb_service:app", "--host", "0.0.0.0", "--port", "8789"]

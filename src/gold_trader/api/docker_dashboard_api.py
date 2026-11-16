@@ -171,20 +171,22 @@ DATA_DIR = os.getenv("AEGIS_DATA_DIR", "/app/data" if os.path.isdir("/app/data")
 MODEL_CONFIGS: Dict[str, Dict[str, Any]] = {
     "aegis-xm-live": {
         "id": "aegis-xm-live",
-        "name": "Aegis Docker Live Node: XM MT5 (Gold)",
+        "name": "Aegis Docker Live Node: XM MT5 (Multi-Asset)",
         "short_name": "XM Live",
         "badge_color": "emerald",
         "bridge_port": 8888,
         "account_id": "346439083",
         "server": "XMGlobal-MT5 10",
         "account_label": "XM Live (Account 346439083)",
-        "order_tag": "LiveGold",
+        "order_tag": "LiveTrades",
         "risk_per_trade": "$75.44 Fixed",
         "tp_policy": "1.25R (+50% Cash) · 3.0R TP2 Runner",
-        "trailing_buffer": "$4.50 Gold",
+        "trailing_buffer": "Dynamic ATR Trail",
         "concurrency": "1 Trade / Asset",
         "dbs": {
             "XAUUSD": os.path.join(DATA_DIR, "xm_live", "trading_data", "auto_trader.db"),
+            "BTCUSD": os.path.join(DATA_DIR, "xm_live", "trading_data", "btc_auto_trader.db"),
+            "ETHUSD": os.path.join(DATA_DIR, "xm_live", "trading_data", "eth_auto_trader.db"),
         },
         "assets": [
             {
@@ -197,6 +199,28 @@ MODEL_CONFIGS: Dict[str, Dict[str, Any]] = {
                 "model_id": "aegis-xm-live",
                 "model_name": "XM Live",
                 "risk_desc": "$75.44 Risk · Dynamic ATR Stop ($8 min) · $4.50 Trail",
+            },
+            {
+                "asset": "Bitcoin",
+                "symbol": "BTCUSD",
+                "venue": "XM / MetaTrader 5",
+                "unit": "lots",
+                "price_format": 2,
+                "default_mark": 76000.0,
+                "model_id": "aegis-xm-live",
+                "model_name": "XM Live",
+                "risk_desc": "$75.44 Risk · Dynamic ATR Stop ($500 min) · $350 Trail",
+            },
+            {
+                "asset": "Ethereum",
+                "symbol": "ETHUSD",
+                "venue": "XM / MetaTrader 5",
+                "unit": "lots",
+                "price_format": 2,
+                "default_mark": 2240.0,
+                "model_id": "aegis-xm-live",
+                "model_name": "XM Live",
+                "risk_desc": "$75.44 Risk · Dynamic ATR Stop ($20 min) · $10 Trail",
             },
         ],
     },
@@ -239,7 +263,7 @@ MODEL_CONFIGS["model_2"] = MODEL_CONFIGS["aegis-sandbox"]
 _CACHE: Dict[str, Any] = {
     "timestamp": 0.0,
     "payload": None,
-    "ttl_seconds": 2.5,
+    "ttl_seconds": 1.0,
     "ticks": {
         "XAUUSD": 4031.50,
         "BTCUSD": 81850.0,
@@ -528,6 +552,16 @@ def fetch_live_asset_cards(
     b2 = get_broker(8889)
     now_iso = datetime.now(timezone.utc).isoformat()
     telemetry = fetch_latest_scan_telemetry()
+    for m_k, m_scans in telemetry.items():
+        if isinstance(m_scans, dict):
+            for s_sym, s_data in m_scans.items():
+                if isinstance(s_data, dict) and s_data.get("price"):
+                    try:
+                        p_val = float(s_data["price"])
+                        if p_val > 0:
+                            _CACHE["ticks"][s_sym.upper()] = p_val
+                    except Exception:
+                        pass
 
     open_positions_m1: List[Dict[str, Any]] = []
     m1_feed_status = "VERIFIED"
@@ -542,6 +576,103 @@ def fetch_live_asset_cards(
     else:
         m1_feed_status = "UNAVAILABLE"
         m1_feed_error = "Broker 1 not connected"
+
+    # Fallback to TelemetryStore & SQLite DBs for decoupled Docker architecture
+    if not open_positions_m1 and TelemetryStore:
+        try:
+            store = TelemetryStore.get_instance()
+            nodes = store.get_nodes()
+            active_m1_nodes = [n for n in nodes if n.get("node_id") == "aegis-xm-live" or n.get("model_id") == "aegis-xm-live"]
+            if active_m1_nodes:
+                m1_feed_status = "VERIFIED"
+                m1_feed_error = ""
+
+            seen_tickets = set()
+            for t in store.get_recent_trades(limit=50):
+                tkt = str(t.get("ticket") or "")
+                if tkt:
+                    if tkt in seen_tickets:
+                        continue
+                    seen_tickets.add(tkt)
+
+                if t.get("status") == "OPEN":
+                    sym = str(t.get("symbol", "")).upper()
+                    cur_p = float(t.get("current_price") or _CACHE["ticks"].get(sym, t.get("entry_price", 0.0)))
+                    ep = float(t.get("entry_price") or 0.0)
+                    act = str(t.get("action") or "BUY").upper()
+                    lts = float(t.get("lots") or 0.03)
+                    mult = 100.0 if "XAU" in sym else 1.0
+                    calc_pnl = (cur_p - ep) * lts * mult if act == "BUY" else (ep - cur_p) * lts * mult
+                    open_positions_m1.append({
+                        "ticket": t.get("ticket"),
+                        "symbol": sym,
+                        "side": act,
+                        "open_price": ep,
+                        "current_price": cur_p,
+                        "lots": lts,
+                        "pnl": round(calc_pnl, 2),
+                        "unrealized_pnl": round(calc_pnl, 2),
+                        "sl": float(t.get("stop_loss")) if t.get("stop_loss") else None,
+                        "tp": float(t.get("target_1")) if t.get("target_1") else None,
+                        "comment": t.get("comment", ""),
+                        "time": t.get("timestamp", ""),
+                        "status": "OPEN",
+                    })
+        except Exception as exc:
+            logger.debug(f"TelemetryStore open positions check note: {exc}")
+
+    # Fallback to SQLite trade_executions DBs if still empty
+    if not open_positions_m1:
+        seen_tickets = set()
+        for sym_k, db_path in MODEL_CONFIGS["aegis-xm-live"]["dbs"].items():
+            if os.path.exists(db_path):
+                try:
+                    conn = connect_sqlite_ro(db_path, timeout=2.0)
+                    cur = conn.cursor()
+                    rows = cur.execute(
+                        """
+                        SELECT ticket, symbol, action, lots, entry_price, stop_loss, target_1, target_2, comment, timestamp
+                        FROM trade_executions
+                        WHERE status = 'OPEN'
+                        ORDER BY id DESC
+                        """
+                    ).fetchall()
+                    conn.close()
+                    for r in rows:
+                        tkt, sym_r, act, lts, ep, sl, tp1, tp2, cmt, ts = r
+                        if str(tkt) in seen_tickets:
+                            continue
+                        seen_tickets.add(str(tkt))
+                        sym_u = (sym_r or sym_k).upper()
+                        cur_p = float(_CACHE["ticks"].get(sym_u, ep or 0.0))
+                        calc_pnl = 0.0
+                        if ep and cur_p:
+                            mult = 100.0 if "XAU" in sym_u else 1.0
+                            calc_pnl = (cur_p - float(ep)) * float(lts) * mult if act == "BUY" else (float(ep) - cur_p) * float(lts) * mult
+
+                        open_positions_m1.append({
+                            "ticket": tkt,
+                            "symbol": sym_u,
+                            "side": act,
+                            "open_price": float(ep or 0.0),
+                            "current_price": cur_p,
+                            "lots": float(lts or 0.0),
+                            "pnl": round(calc_pnl, 2),
+                            "unrealized_pnl": round(calc_pnl, 2),
+                            "sl": float(sl) if sl else None,
+                            "tp": float(tp1) if tp1 else None,
+                            "comment": cmt or "",
+                            "time": ts or "",
+                            "status": "OPEN",
+                        })
+                        m1_feed_status = "VERIFIED"
+                        m1_feed_error = ""
+                except Exception as exc:
+                    logger.debug(f"SQLite open positions check note for {sym_k}: {exc}")
+
+    if open_positions_m1:
+        m1_feed_status = "VERIFIED"
+        m1_feed_error = ""
 
     open_positions_m2: List[Dict[str, Any]] = []
     m2_feed_status = "VERIFIED"
@@ -559,8 +690,15 @@ def fetch_live_asset_cards(
 
     open_by_model_sym: Dict[tuple, Dict[str, Any]] = {}
     tagged_positions: List[Dict[str, Any]] = []
+    seen_tagged_tickets = set()
 
     for p in open_positions_m1:
+        tkt = str(p.get("ticket") or "")
+        if tkt:
+            if tkt in seen_tagged_tickets:
+                continue
+            seen_tagged_tickets.add(tkt)
+
         sym = p.get("symbol", "").upper()
         if "GOLD" in sym or "XAU" in sym:
             sym = "XAUUSD"
@@ -573,10 +711,34 @@ def fetch_live_asset_cards(
         p_tagged["model_id"] = "model_1"
         p_tagged["model_name"] = MODEL_CONFIGS["model_1"]["short_name"]
         p_tagged["symbol_norm"] = sym
+        p_tagged["symbol"] = sym
+        p_tagged["entry"] = float(p.get("open_price") or p.get("entry_price") or p.get("entry") or 0.0)
+        p_tagged["open_price"] = p_tagged["entry"]
+        p_tagged["mark"] = float(p.get("current_price") or p.get("mark") or _CACHE["ticks"].get(sym, p_tagged["entry"]))
+        p_tagged["current_price"] = p_tagged["mark"]
+        p_tagged["take_profit"] = float(p.get("tp") or p.get("take_profit") or p.get("target_1")) if (p.get("tp") or p.get("take_profit") or p.get("target_1")) else None
+        p_tagged["tp"] = p_tagged["take_profit"]
+        p_tagged["stop_loss"] = float(p.get("sl") or p.get("stop_loss")) if (p.get("sl") or p.get("stop_loss")) else None
+        p_tagged["sl"] = p_tagged["stop_loss"]
+        p_tagged["status"] = "OPEN"
+        p_tagged["in_trade"] = True
+        p_tagged["side"] = (p.get("side") or p.get("action") or "BUY").upper()
+        p_tagged["lots"] = float(p.get("lots") or 0.03)
+        p_tagged["volume"] = p.get("volume") or f"{p_tagged['lots']:.2f} lots"
+        p_tagged["qty"] = p.get("qty") or f"{p_tagged['lots']:.2f} lots"
+        p_tagged["ticket"] = str(p.get("ticket") or "")
+        p_tagged["pnl"] = float(p.get("unrealized_pnl") or p.get("pnl") or 0.0)
+        p_tagged["unrealized_pnl"] = p_tagged["pnl"]
         tagged_positions.append(p_tagged)
         open_by_model_sym[("model_1", sym)] = p_tagged
 
     for p in open_positions_m2:
+        tkt = str(p.get("ticket") or "")
+        if tkt:
+            if tkt in seen_tagged_tickets:
+                continue
+            seen_tagged_tickets.add(tkt)
+
         sym = p.get("symbol", "").upper()
         if "BTC" in sym:
             sym = "BTCUSD"
@@ -630,10 +792,20 @@ def fetch_live_asset_cards(
                 },
             )
 
+            if radar_info.get("price") and float(radar_info["price"]) > 0:
+                mark_price = float(radar_info["price"])
+                _CACHE["ticks"][sym] = mark_price
+
             pos = open_by_model_sym.get((m_id, sym))
             today_realized = float(today_realized_by_model_sym.get((m_id, sym), 0.0))
 
             if pos:
+                p_ep = float(pos.get("open_price", mark_price))
+                p_mark = float(mark_price or pos.get("current_price", mark_price))
+                p_side = pos.get("side", "BUY").upper()
+                p_lots = float(pos.get("lots", 0.01))
+                p_mult = 100.0 if "XAU" in sym else 1.0
+                p_unrealized = (p_mark - p_ep) * p_lots * p_mult if p_side == "BUY" else (p_ep - p_mark) * p_lots * p_mult
                 card_data = {
                     "asset": item["asset"],
                     "symbol": sym,
@@ -644,11 +816,11 @@ def fetch_live_asset_cards(
                     "badge_color": mcfg["badge_color"],
                     "risk_desc": item["risk_desc"],
                     "status": "IN TRADE",
-                    "side": pos.get("side", "BUY"),
-                    "entry": float(pos.get("open_price", mark_price)),
-                    "mark": float(pos.get("current_price", mark_price)),
-                    "quantity": float(pos.get("lots", 0.01)),
-                    "unrealized_pnl": round(float(pos.get("pnl", 0.0)), 2),
+                    "side": p_side,
+                    "entry": p_ep,
+                    "mark": p_mark,
+                    "quantity": p_lots,
+                    "unrealized_pnl": round(p_unrealized, 2),
                     "realized_today": round(today_realized, 2),
                     "stop_loss": float(pos.get("sl")) if pos.get("sl") else None,
                     "take_profit": float(pos.get("tp")) if pos.get("tp") else None,
@@ -940,15 +1112,193 @@ def get_telemetry_nodes():
 @app.get("/api/telemetry/overview", dependencies=[Depends(verify_read_access)])
 def get_telemetry_overview():
     if not TelemetryStore:
-        return {"status": "SUCCESS", "active": False, "nodes": [], "scans": {}, "accounts": [], "recent_trades": []}
+        return {"status": "SUCCESS", "active": False, "nodes": [], "scans": {}, "accounts": [], "recent_trades": [], "open_positions": [], "unrealized_pnl": 0.0}
     store = TelemetryStore.get_instance()
+    nodes = store.get_nodes()
+    scans = store.get_scans()
+    accounts = store.get_accounts()
+    recent_trades = store.get_recent_trades(limit=50)
+
+    # Update tick cache from latest live scan ticks
+    for m_k, m_scans in (scans or {}).items():
+        if isinstance(m_scans, dict):
+            for s_sym, s_data in m_scans.items():
+                if isinstance(s_data, dict) and s_data.get("price"):
+                    try:
+                        p_val = float(s_data["price"])
+                        if p_val > 0:
+                            _CACHE["ticks"][s_sym.upper()] = p_val
+                    except Exception:
+                        pass
+
+    # Collect and calculate active open positions with live real-time floating PnL
+    open_positions = []
+    seen_open_tickets = set()
+
+    # 1. From Telemetry recent trades
+    for t in (recent_trades or []):
+        tkt = str(t.get("ticket", ""))
+        if tkt:
+            if tkt in seen_open_tickets:
+                continue
+            seen_open_tickets.add(tkt)
+
+        t_status = str(t.get("status", "")).upper()
+        if t_status == "OPEN":
+            sym = str(t.get("symbol", "")).upper()
+            ep = float(t.get("entry_price") or t.get("entry") or 0.0)
+            cur_p = float(_CACHE["ticks"].get(sym, t.get("current_price") or ep))
+            lts = float(t.get("lots") or 0.01)
+            act = str(t.get("action") or t.get("side") or "BUY").upper()
+            mult = 100.0 if "XAU" in sym else 1.0
+            calc_pnl = (cur_p - ep) * lts * mult if act == "BUY" else (ep - cur_p) * lts * mult
+            open_positions.append({
+                "ticket": tkt,
+                "symbol": sym,
+                "symbol_norm": sym,
+                "side": act,
+                "entry": ep,
+                "open_price": ep,
+                "mark": cur_p,
+                "current_price": cur_p,
+                "lots": lts,
+                "volume": f"{lts:.2f} lots",
+                "qty": f"{lts:.2f} lots",
+                "pnl": round(calc_pnl, 2),
+                "unrealized_pnl": round(calc_pnl, 2),
+                "sl": float(t.get("stop_loss")) if t.get("stop_loss") else None,
+                "tp": float(t.get("target_1") or t.get("take_profit")) if (t.get("target_1") or t.get("take_profit")) else None,
+                "stop_loss": float(t.get("stop_loss")) if t.get("stop_loss") else None,
+                "take_profit": float(t.get("target_1") or t.get("take_profit")) if (t.get("target_1") or t.get("take_profit")) else None,
+                "status": "OPEN",
+                "in_trade": True,
+                "comment": str(t.get("comment", "")),
+                "time": str(t.get("timestamp", "")),
+            })
+
+    # 2. From SQLite databases if any open positions weren't in memory
+    for sym_k, db_path in MODEL_CONFIGS["aegis-xm-live"]["dbs"].items():
+        if os.path.exists(db_path):
+            try:
+                conn = connect_sqlite_ro(db_path, timeout=1.5)
+                cur = conn.cursor()
+                rows = cur.execute(
+                    "SELECT ticket, symbol, action, lots, entry_price, stop_loss, target_1, comment, timestamp FROM trade_executions WHERE status = 'OPEN' ORDER BY id DESC"
+                ).fetchall()
+                conn.close()
+                for r in rows:
+                    tkt = str(r[0] or "")
+                    if tkt in seen_open_tickets:
+                        continue
+                    seen_open_tickets.add(tkt)
+                    sym_u = (r[1] or sym_k).upper()
+                    ep = float(r[4] or 0.0)
+                    cur_p = float(_CACHE["ticks"].get(sym_u, ep))
+                    lts = float(r[3] or 0.01)
+                    act = str(r[2] or "BUY").upper()
+                    mult = 100.0 if "XAU" in sym_u else 1.0
+                    calc_pnl = (cur_p - ep) * lts * mult if act == "BUY" else (ep - cur_p) * lts * mult
+                    open_positions.append({
+                        "ticket": tkt,
+                        "symbol": sym_u,
+                        "symbol_norm": sym_u,
+                        "side": act,
+                        "entry": ep,
+                        "open_price": ep,
+                        "mark": cur_p,
+                        "current_price": cur_p,
+                        "lots": lts,
+                        "volume": f"{lts:.2f} lots",
+                        "qty": f"{lts:.2f} lots",
+                        "pnl": round(calc_pnl, 2),
+                        "unrealized_pnl": round(calc_pnl, 2),
+                        "sl": float(r[5]) if r[5] else None,
+                        "tp": float(r[6]) if r[6] else None,
+                        "stop_loss": float(r[5]) if r[5] else None,
+                        "take_profit": float(r[6]) if r[6] else None,
+                        "status": "OPEN",
+                        "in_trade": True,
+                        "comment": str(r[7] or ""),
+                        "time": str(r[8] or ""),
+                    })
+            except Exception:
+                pass
+
+    # Enrich recent_trades with live price and floating PnL
+    for t in (recent_trades or []):
+        if str(t.get("status", "")).upper() == "OPEN":
+            sym = str(t.get("symbol", "")).upper()
+            ep = float(t.get("entry_price") or t.get("entry") or 0.0)
+            cur_p = float(_CACHE["ticks"].get(sym, t.get("current_price") or ep))
+            t["current_price"] = cur_p
+            lts = float(t.get("lots") or 0.01)
+            act = str(t.get("action") or t.get("side") or "BUY").upper()
+            mult = 100.0 if "XAU" in sym else 1.0
+            calc_pnl = (cur_p - ep) * lts * mult if act == "BUY" else (ep - cur_p) * lts * mult
+            t["pnl"] = round(calc_pnl, 2)
+            t["unrealized_pnl"] = round(calc_pnl, 2)
+
+    # Cross-reference with active open positions to ensure real-time consistency
+    active_symbols = set()
+    for op in open_positions:
+        sym = (op.get("symbol") or op.get("symbol_norm") or "").upper()
+        if sym:
+            active_symbols.add(sym)
+
+    # Ensure node in_trade status accurately reflects active open market positions
+    for node in nodes:
+        nsym = (node.get("symbol") or "").upper()
+        if nsym in active_symbols:
+            node["in_trade"] = True
+            node["open_positions"] = 1
+
+    # If telemetry bus has no recent trades cached, load from SQLite trade_executions
+    if not recent_trades:
+        recent_trades = []
+        for sym_k, db_path in MODEL_CONFIGS["aegis-xm-live"]["dbs"].items():
+            if os.path.exists(db_path):
+                try:
+                    conn = connect_sqlite_ro(db_path, timeout=1.0)
+                    cur = conn.cursor()
+                    rows = cur.execute(
+                        "SELECT ticket, symbol, action, lots, status, entry_price, close_price, pnl, timestamp FROM trade_executions ORDER BY id DESC LIMIT 10"
+                    ).fetchall()
+                    conn.close()
+                    for r in rows:
+                        recent_trades.append({
+                            "ticket": str(r[0] or ""),
+                            "symbol": r[1] or sym_k,
+                            "side": r[2],
+                            "volume": f"{r[3]} lots",
+                            "status": r[4],
+                            "entry": r[5],
+                            "close": r[6],
+                            "pnl": r[7],
+                            "timestamp": r[8]
+                        })
+                except Exception:
+                    pass
+
+    # Live update accounts unrealized PnL from active positions
+    total_floating_pnl = sum(p["pnl"] for p in open_positions)
+    if accounts and len(accounts) > 0:
+        acct_0 = accounts[0]
+        if isinstance(acct_0, dict):
+            acct_0["unrealized_pnl"] = round(total_floating_pnl, 2)
+            bal = float(acct_0.get("balance", 0.0))
+            if bal > 0:
+                acct_0["equity"] = round(bal + total_floating_pnl, 2)
+            acct_0["open_positions_count"] = len(open_positions)
+
     return {
         "status": "SUCCESS",
         "active": store.is_telemetry_active(),
-        "nodes": store.get_nodes(),
-        "scans": store.get_scans(),
-        "accounts": store.get_accounts(),
-        "recent_trades": store.get_recent_trades(limit=50),
+        "nodes": nodes,
+        "scans": scans,
+        "accounts": accounts,
+        "recent_trades": recent_trades,
+        "open_positions": open_positions,
+        "unrealized_pnl": round(total_floating_pnl, 2),
     }
 
 
@@ -1086,17 +1436,17 @@ def get_dashboard_overview():
         "models": [
             {
                 "id": "aegis-xm-live",
-                "name": "Aegis Docker Live Node: XM MT5 (Gold)",
+                "name": "Aegis Docker Live Node: XM MT5 (Multi-Asset)",
                 "short_name": "XM Live",
                 "account_id": "346439083",
                 "account_name": "XM Live (Account 346439083)",
                 "server": "XMGlobal-MT5 10",
                 "bridge_port": 8888,
-                "assets": ["XAUUSD"],
+                "assets": ["XAUUSD", "BTCUSD", "ETHUSD"],
                 "risk": "$75.44 Fixed",
-                "trailing": "Dynamic ATR Trail ($4.50)",
+                "trailing": "Dynamic ATR Trail",
                 "concurrency": "1 Position / Asset",
-                "order_tag": "LiveGold",
+                "order_tag": "LiveTrades",
             },
             {
                 "id": "aegis-sandbox",

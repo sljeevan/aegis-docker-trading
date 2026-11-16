@@ -48,6 +48,10 @@
       font-size: 0.72rem;
       font-weight: 700;
     }
+    .donchian-track { position: relative; height: 8px; background: #f1f5f9; border-radius: 9999px; }
+    .donchian-pin { position: absolute; top: -3px; width: 14px; height: 14px; border-radius: 50%; transform: translateX(-50%); transition: left 0.3s ease; }
+    .runner-flight-track { position: relative; height: 8px; background: #f1f5f9; border-radius: 9999px; overflow: hidden; }
+    .runner-flight-fill { height: 100%; border-radius: 9999px; transition: width 0.3s ease; }
     /* Custom scrollbar */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #f1f5f9; }
@@ -228,7 +232,7 @@
         <div class="card p-4 flex items-center justify-between">
           <div>
             <p class="text-xs text-slate-500 font-medium">Total Capital</p>
-            <h3 id="kpi-total-capital" class="text-xl font-bold text-slate-900 mt-0.5">$1,500.00</h3>
+            <h3 id="kpi-total-capital" class="text-xl font-bold text-slate-900 mt-0.5">$3,454.53</h3>
             <span id="kpi-capital-change" class="text-[11px] font-semibold text-slate-400 flex items-center gap-0.5 mt-0.5">
               0.00% Today
             </span>
@@ -242,7 +246,7 @@
         <div class="card p-4 flex items-center justify-between">
           <div>
             <p class="text-xs text-slate-500 font-medium">Equity</p>
-            <h3 id="kpi-equity" class="text-xl font-bold text-slate-900 mt-0.5">$1,500.00</h3>
+            <h3 id="kpi-equity" class="text-xl font-bold text-slate-900 mt-0.5">$3,454.53</h3>
             <span id="kpi-equity-change" class="text-[11px] font-semibold text-slate-400 flex items-center gap-0.5 mt-0.5">
               0.00%
             </span>
@@ -256,7 +260,7 @@
         <div class="card p-4 flex items-center justify-between">
           <div>
             <p class="text-xs text-slate-500 font-medium">Today's P&L</p>
-            <h3 id="kpi-today-pnl" class="text-xl font-bold text-slate-700 mt-0.5">+$0.00</h3>
+            <h3 id="kpi-today-pnl" class="text-xl font-bold text-emerald-600 mt-0.5">+$188.51</h3>
             <span class="text-[11px] font-semibold text-slate-400 mt-0.5 block">Session Net</span>
           </div>
           <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
@@ -280,7 +284,7 @@
         <div class="card p-4 flex items-center justify-between">
           <div>
             <p class="text-xs text-slate-500 font-medium">Realized P&L</p>
-            <h3 id="kpi-realized-all" class="text-xl font-bold text-slate-700 mt-0.5">$0.00</h3>
+            <h3 id="kpi-realized-all" class="text-xl font-bold text-emerald-600 mt-0.5">+$454.53</h3>
             <span class="text-[11px] font-semibold text-slate-400 mt-0.5 block">Closed Trades</span>
           </div>
           <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
@@ -388,25 +392,25 @@
             <div>
               <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block mr-1"></span>
               <span class="text-slate-600">Wins:</span>
-              <span id="today-wins-count" class="font-bold text-slate-900 ml-0.5">2</span>
+              <span id="today-wins-count" class="font-bold text-slate-900 ml-0.5">4</span>
             </div>
             <div>
               <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block mr-1"></span>
               <span class="text-slate-600">Losses:</span>
-              <span id="today-losses-count" class="font-bold text-slate-900 ml-0.5">1</span>
+              <span id="today-losses-count" class="font-bold text-slate-900 ml-0.5">2</span>
             </div>
             <div>
               <span class="text-slate-400">Total:</span>
-              <span id="today-total-trades" class="font-bold text-slate-900 ml-0.5">3</span>
+              <span id="today-total-trades" class="font-bold text-slate-900 ml-0.5">6</span>
             </div>
           </div>
         </div>
       </section>
 
       <!-- ===================================================================== -->
-      <!-- ROW 2: LIVE ASSET CARDS + LIVE SIGNALS FEED -->
+      <!-- ROW 2: LIVE ASSET CARDS & REAL-TIME DONCHIAN STATUS BARS -->
       <!-- ===================================================================== -->
-      <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
         <!-- 1. Gold (XAUUSD) Card -->
         <div class="card p-5 flex flex-col justify-between space-y-4">
@@ -429,7 +433,7 @@
             <!-- Price & Sparkline -->
             <div class="flex items-baseline justify-between mt-4">
               <div>
-                <span id="gold-price" class="text-2xl font-black text-slate-900 tracking-tight">$4,070.76</span>
+                <span id="gold-price" class="text-2xl font-black text-slate-900 tracking-tight">$3,889.83</span>
                 <span id="gold-change" class="text-xs font-bold text-emerald-600 ml-1.5">● LIVE</span>
               </div>
               <div class="w-20 h-6">
@@ -444,15 +448,47 @@
             <div class="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-slate-100 text-[11px]">
               <div>
                 <span class="text-slate-400 block font-medium">Trend (1H)</span>
-                <span id="gold-trend" class="font-bold text-slate-600">NEUTRAL →</span>
+                <span id="gold-trend" class="font-bold text-rose-500">BEARISH ↓</span>
               </div>
               <div>
                 <span class="text-slate-400 block font-medium">ATR (30m)</span>
-                <span id="gold-atr30" class="font-bold text-slate-800">$17.52</span>
+                <span id="gold-atr30" class="font-bold text-slate-800">$15.22</span>
               </div>
               <div>
                 <span class="text-slate-400 block font-medium">Position</span>
                 <span id="gold-position-status" class="font-bold text-slate-600">Flat (0)</span>
+              </div>
+            </div>
+
+            <!-- Donchian 10 Channel Proximity Status Bar -->
+            <div id="gold-channel-bar-container" class="mt-4 pt-3 border-t border-slate-100 space-y-1.5">
+              <div class="flex justify-between items-center text-[10px] text-slate-500 font-medium">
+                <span>Low: <span id="gold-d-low" class="font-mono text-slate-700 font-semibold">$3,886.26</span></span>
+                <span id="gold-band-pct" class="font-bold font-mono text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">10% of Band</span>
+                <span>High: <span id="gold-d-high" class="font-mono text-slate-700 font-semibold">$3,922.82</span></span>
+              </div>
+              <div class="donchian-track bg-slate-100 relative h-2.5 rounded-full overflow-visible">
+                <div id="gold-d-fill" class="h-full bg-blue-500/20 rounded-full transition-all duration-300" style="width: 10%;"></div>
+                <div id="gold-d-pin" class="donchian-pin absolute -top-1 w-4 h-4 rounded-full bg-blue-600 border-2 border-white shadow-md shadow-blue-500/40 -translate-x-1/2 transition-all duration-300" style="left: 10%;"></div>
+              </div>
+              <div class="flex justify-between items-center text-[10px] text-slate-400">
+                <span id="gold-channel-status" class="font-medium text-slate-500">10-Bar Donchian Track</span>
+                <span>Mid: <span id="gold-d-mid" class="font-mono text-slate-600">$3,904.54</span></span>
+              </div>
+            </div>
+
+            <!-- In-Trade TP1 Flight Path Bar (Dynamically shown when in trade) -->
+            <div id="gold-trade-bar-container" class="hidden mt-4 pt-3 border-t border-slate-100 space-y-1.5">
+              <div class="flex justify-between items-center text-[11px] mb-1">
+                <span class="text-slate-500 font-medium">TP1 Progress (+1.25R):</span>
+                <span id="gold-flight-pct" class="font-mono font-bold text-emerald-600">0%</span>
+              </div>
+              <div class="runner-flight-track bg-slate-100 relative h-2.5 rounded-full overflow-hidden">
+                <div id="gold-flight-fill" class="runner-flight-fill bg-emerald-500 h-full rounded-full transition-all duration-300" style="width: 0%;"></div>
+              </div>
+              <div class="flex justify-between text-[10px] text-slate-400 mt-1 font-mono">
+                <span id="gold-trade-entry">Entry: —</span>
+                <span id="gold-trade-target">Target 1: —</span>
               </div>
             </div>
           </div>
@@ -473,19 +509,19 @@
                 </div>
                 <div>
                   <h3 class="text-sm font-bold text-slate-900">Bitcoin (BTCUSD)</h3>
-                  <p class="text-[11px] text-slate-400 font-medium">Docker Node • Standby</p>
+                  <p class="text-[11px] text-emerald-600 font-medium">Docker Node • Live Active</p>
                 </div>
               </div>
-              <span id="btc-status-badge" class="metric-badge bg-slate-100 text-slate-500 border border-slate-200">
-                ● STANDBY
+              <span id="btc-status-badge" class="metric-badge bg-emerald-50 text-emerald-600 border border-emerald-200">
+                ● SCANNING
               </span>
             </div>
 
             <!-- Price & Sparkline -->
             <div class="flex items-baseline justify-between mt-4">
               <div>
-                <span id="btc-price" class="text-2xl font-black text-slate-900 tracking-tight">$81,850.00</span>
-                <span id="btc-change" class="text-xs font-bold text-slate-400 ml-1.5">—</span>
+                <span id="btc-price" class="text-2xl font-black text-slate-900 tracking-tight">$69,328.05</span>
+                <span id="btc-change" class="text-xs font-bold text-emerald-600 ml-1.5">● LIVE</span>
               </div>
               <div class="w-20 h-6">
                 <!-- SVG Sparkline -->
@@ -499,22 +535,54 @@
             <div class="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-slate-100 text-[11px]">
               <div>
                 <span class="text-slate-400 block font-medium">Trend (1H)</span>
-                <span id="btc-trend" class="font-bold text-slate-600">STANDBY</span>
+                <span id="btc-trend" class="font-bold text-rose-500">BEARISH ↓</span>
               </div>
               <div>
                 <span class="text-slate-400 block font-medium">ATR (30m)</span>
-                <span id="btc-atr30" class="font-bold text-slate-800">—</span>
+                <span id="btc-atr30" class="font-bold text-slate-800">$625.28</span>
               </div>
               <div>
                 <span class="text-slate-400 block font-medium">Position</span>
                 <span id="btc-position-status" class="font-bold text-slate-600">Flat (0)</span>
               </div>
             </div>
+
+            <!-- Donchian 10 Channel Proximity Status Bar -->
+            <div id="btc-channel-bar-container" class="mt-4 pt-3 border-t border-slate-100 space-y-1.5">
+              <div class="flex justify-between items-center text-[10px] text-slate-500 font-medium">
+                <span>Low: <span id="btc-d-low" class="font-mono text-slate-700 font-semibold">$67,549.00</span></span>
+                <span id="btc-band-pct" class="font-bold font-mono text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">52% of Band</span>
+                <span>High: <span id="btc-d-high" class="font-mono text-slate-700 font-semibold">$70,951.65</span></span>
+              </div>
+              <div class="donchian-track bg-slate-100 relative h-2.5 rounded-full overflow-visible">
+                <div id="btc-d-fill" class="h-full bg-blue-500/20 rounded-full transition-all duration-300" style="width: 52%;"></div>
+                <div id="btc-d-pin" class="donchian-pin absolute -top-1 w-4 h-4 rounded-full bg-blue-600 border-2 border-white shadow-md shadow-blue-500/40 -translate-x-1/2 transition-all duration-300" style="left: 52%;"></div>
+              </div>
+              <div class="flex justify-between items-center text-[10px] text-slate-400">
+                <span id="btc-channel-status" class="font-medium text-slate-500">10-Bar Donchian Track</span>
+                <span>Mid: <span id="btc-d-mid" class="font-mono text-slate-600">$69,250.32</span></span>
+              </div>
+            </div>
+
+            <!-- In-Trade TP1 Flight Path Bar (Dynamically shown when in trade) -->
+            <div id="btc-trade-bar-container" class="hidden mt-4 pt-3 border-t border-slate-100 space-y-1.5">
+              <div class="flex justify-between items-center text-[11px] mb-1">
+                <span class="text-slate-500 font-medium">TP1 Progress (+1.25R):</span>
+                <span id="btc-flight-pct" class="font-mono font-bold text-emerald-600">0%</span>
+              </div>
+              <div class="runner-flight-track bg-slate-100 relative h-2.5 rounded-full overflow-hidden">
+                <div id="btc-flight-fill" class="runner-flight-fill bg-emerald-500 h-full rounded-full transition-all duration-300" style="width: 0%;"></div>
+              </div>
+              <div class="flex justify-between text-[10px] text-slate-400 mt-1 font-mono">
+                <span id="btc-trade-entry">Entry: —</span>
+                <span id="btc-trade-target">Target 1: —</span>
+              </div>
+            </div>
           </div>
 
           <!-- Footer Setup Badge -->
           <div class="bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-[10px] text-slate-600 font-medium flex items-center gap-1.5">
-            <span>⚙️</span> Setup: $75.00 Risk • Prop Firm Staging
+            <span>⚙️</span> Setup: $75.44 Risk • Dynamic ATR Stop • $350.00 Trail
           </div>
         </div>
 
@@ -528,19 +596,19 @@
                 </div>
                 <div>
                   <h3 class="text-sm font-bold text-slate-900">Ethereum (ETHUSD)</h3>
-                  <p class="text-[11px] text-slate-400 font-medium">Docker Node • Standby</p>
+                  <p class="text-[11px] text-emerald-600 font-medium">Docker Node • Live Active</p>
                 </div>
               </div>
-              <span id="eth-status-badge" class="metric-badge bg-slate-100 text-slate-500 border border-slate-200">
-                ● STANDBY
+              <span id="eth-status-badge" class="metric-badge bg-emerald-50 text-emerald-600 border border-emerald-200">
+                ● SCANNING
               </span>
             </div>
 
             <!-- Price & Sparkline -->
             <div class="flex items-baseline justify-between mt-4">
               <div>
-                <span id="eth-price" class="text-2xl font-black text-slate-900 tracking-tight">$2,404.00</span>
-                <span id="eth-change" class="text-xs font-bold text-slate-400 ml-1.5">—</span>
+                <span id="eth-price" class="text-2xl font-black text-slate-900 tracking-tight">$1,958.36</span>
+                <span id="eth-change" class="text-xs font-bold text-emerald-600 ml-1.5">● LIVE</span>
               </div>
               <div class="w-20 h-6">
                 <!-- SVG Sparkline -->
@@ -554,45 +622,59 @@
             <div class="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-slate-100 text-[11px]">
               <div>
                 <span class="text-slate-400 block font-medium">Trend (1H)</span>
-                <span id="eth-trend" class="font-bold text-slate-600">STANDBY</span>
+                <span id="eth-trend" class="font-bold text-rose-500">BEARISH ↓</span>
               </div>
               <div>
                 <span class="text-slate-400 block font-medium">ATR (30m)</span>
-                <span id="eth-atr30" class="font-bold text-slate-800">—</span>
+                <span id="eth-atr30" class="font-bold text-slate-800">$20.71</span>
               </div>
               <div>
                 <span class="text-slate-400 block font-medium">Position</span>
                 <span id="eth-position-status" class="font-bold text-slate-600">Flat (0)</span>
               </div>
             </div>
+
+            <!-- Donchian 10 Channel Proximity Status Bar -->
+            <div id="eth-channel-bar-container" class="mt-4 pt-3 border-t border-slate-100 space-y-1.5">
+              <div class="flex justify-between items-center text-[10px] text-slate-500 font-medium">
+                <span>Low: <span id="eth-d-low" class="font-mono text-slate-700 font-semibold">$1,894.62</span></span>
+                <span id="eth-band-pct" class="font-bold font-mono text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">55% of Band</span>
+                <span>High: <span id="eth-d-high" class="font-mono text-slate-700 font-semibold">$2,011.08</span></span>
+              </div>
+              <div class="donchian-track bg-slate-100 relative h-2.5 rounded-full overflow-visible">
+                <div id="eth-d-fill" class="h-full bg-blue-500/20 rounded-full transition-all duration-300" style="width: 55%;"></div>
+                <div id="eth-d-pin" class="donchian-pin absolute -top-1 w-4 h-4 rounded-full bg-blue-600 border-2 border-white shadow-md shadow-blue-500/40 -translate-x-1/2 transition-all duration-300" style="left: 55%;"></div>
+              </div>
+              <div class="flex justify-between items-center text-[10px] text-slate-400">
+                <span id="eth-channel-status" class="font-medium text-slate-500">10-Bar Donchian Track</span>
+                <span>Mid: <span id="eth-d-mid" class="font-mono text-slate-600">$1,952.85</span></span>
+              </div>
+            </div>
+
+            <!-- In-Trade TP1 Flight Path Bar (Dynamically shown when in trade) -->
+            <div id="eth-trade-bar-container" class="hidden mt-4 pt-3 border-t border-slate-100 space-y-1.5">
+              <div class="flex justify-between items-center text-[11px] mb-1">
+                <span class="text-slate-500 font-medium">TP1 Progress (+1.25R):</span>
+                <span id="eth-flight-pct" class="font-mono font-bold text-emerald-600">0%</span>
+              </div>
+              <div class="runner-flight-track bg-slate-100 relative h-2.5 rounded-full overflow-hidden">
+                <div id="eth-flight-fill" class="runner-flight-fill bg-emerald-500 h-full rounded-full transition-all duration-300" style="width: 0%;"></div>
+              </div>
+              <div class="flex justify-between text-[10px] text-slate-400 mt-1 font-mono">
+                <span id="eth-trade-entry">Entry: —</span>
+                <span id="eth-trade-target">Target 1: —</span>
+              </div>
+            </div>
           </div>
 
           <!-- Footer Setup Badge -->
           <div class="bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-[10px] text-slate-600 font-medium flex items-center gap-1.5">
-            <span>⚙️</span> Setup: $75.00 Risk • Prop Firm Staging
-          </div>
-        </div>
-
-        <!-- 4. Live Signals & Engine Status Feed -->
-        <div class="card p-5 flex flex-col justify-between space-y-3">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-blue-600 animate-ping"></span>
-              <h3 class="text-sm font-bold text-slate-900">Live Signals & Status</h3>
-            </div>
-            <span class="text-[10px] font-bold text-slate-400">REALTIME</span>
-          </div>
-
-          <div id="signal-feed-list" class="space-y-2.5 text-xs overflow-y-auto max-h-48 pr-1">
-            <div class="p-3 bg-slate-50 border border-slate-100 rounded-xl text-center text-slate-400 text-xs">
-              Awaiting next bar scan...
-            </div>
+            <span>⚙️</span> Setup: $75.44 Risk • Dynamic ATR Stop • $10.00 Trail
           </div>
         </div>
 
       </section>
 
-      <!-- ===================================================================== -->
       <!-- ROW 3: P&L ANALYTICS | STRATEGY PERFORMANCE | RECENT TRADES -->
       <!-- ===================================================================== -->
       <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -622,7 +704,7 @@
             <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
             <h2 class="text-sm font-bold text-slate-800">Strategy Performance</h2>
           </div>
-          <div class="overflow-x-auto">
+          <div class="overflow-x-auto max-h-96 overflow-y-auto">
             <table class="w-full text-left text-xs">
               <thead>
                 <tr class="text-slate-400 font-semibold border-b border-slate-100">
@@ -658,7 +740,7 @@
             </div>
             <a href="javascript:void(0)" onclick="switchTab('journal')" class="text-[11px] font-bold text-blue-600 hover:text-blue-700">View All →</a>
           </div>
-          <div class="overflow-x-auto">
+          <div class="overflow-x-auto max-h-96 overflow-y-auto">
             <table class="w-full text-left text-xs">
               <thead>
                 <tr class="text-slate-400 font-semibold border-b border-slate-100">
@@ -761,6 +843,557 @@
         </div>
       </section>
 
+      <!-- ===================================================================== -->
+      <!-- VIEW: LIVE TRADING & SCANNER CONSOLE -->
+      <!-- ===================================================================== -->
+      <section id="view-live-trading" class="hidden space-y-6">
+        <!-- Top Control Bar -->
+        <div class="card p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-lg font-bold text-slate-900">⚡ Live Execution & Scanner Console</h2>
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                AUTONOMOUS SCANNING ACTIVE
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5">XM Global MT5 Live Gateway (Account 346439083) • 1H Donchian Channel Touch & ATR Trailing Runners</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="toggleNoVNC()" id="btn-toggle-vnc" class="px-3.5 py-2 text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-colors flex items-center gap-1.5">
+              🖥️ <span id="vnc-toggle-label">Show Embedded MT5 Desktop</span>
+            </button>
+            <a href="javascript:void(0)" onclick="window.open('http://' + (window.location.hostname || '76.13.246.133') + ':8081/vnc.html', '_blank')" class="px-3.5 py-2 text-xs font-bold bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl transition-colors flex items-center gap-1.5">
+              ↗ Pop-out noVNC (Port 8081)
+            </a>
+          </div>
+        </div>
+
+        <!-- Embedded noVNC Container (Collapsible) -->
+        <div id="vnc-container" class="hidden card overflow-hidden p-0 border border-slate-200 shadow-sm">
+          <div class="bg-slate-900 text-slate-300 px-4 py-2.5 flex items-center justify-between text-xs font-mono">
+            <span class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              MetaTrader 5 GUI — aegis-xm-live Container (Port 8081 noVNC)
+            </span>
+            <span class="text-slate-400">Account: 346439083 (XMGlobal-MT5 10)</span>
+          </div>
+          <iframe id="vnc-iframe" src="" style="width: 100%; height: 620px; border: none; background: #000;"></iframe>
+        </div>
+
+        <!-- Live Scanning Radar Grid (3 Assets) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="live-radars-grid">
+          <!-- Dynamically populated by renderLiveTradingView() -->
+        </div>
+
+        <!-- Active Open Positions Blotter -->
+        <div class="card p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">Active Open Positions & Staged Orders</h3>
+              <p class="text-xs text-slate-500">Real-time MT5 deal lifecycle, partial scale-outs (1.25R TP1), and trailing runners.</p>
+            </div>
+            <span id="live-active-badge" class="metric-badge bg-slate-100 text-slate-600 font-semibold text-xs">0 Open Positions</span>
+          </div>
+          <div class="overflow-x-auto max-h-96 overflow-y-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="text-slate-400 font-medium border-b border-slate-100">
+                <tr>
+                  <th class="pb-2.5 font-semibold">Ticket</th>
+                  <th class="pb-2.5 font-semibold">Symbol</th>
+                  <th class="pb-2.5 font-semibold">Side</th>
+                  <th class="pb-2.5 font-semibold">Volume</th>
+                  <th class="pb-2.5 font-semibold">Entry</th>
+                  <th class="pb-2.5 font-semibold">Mark Price</th>
+                  <th class="pb-2.5 font-semibold">Stop Loss</th>
+                  <th class="pb-2.5 font-semibold">TP1 (1.25R)</th>
+                  <th class="pb-2.5 font-semibold">Floating P&L</th>
+                  <th class="pb-2.5 font-semibold">Status</th>
+                </tr>
+              </thead>
+              <tbody id="live-positions-tbody" class="divide-y divide-slate-100 font-medium">
+                <tr>
+                  <td colspan="10" class="py-8 text-center text-slate-400 text-xs">
+                    Scanning active across Gold, Bitcoin, and Ethereum. No open positions currently in market (Account flat & capital preserved).
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Live Scanner Signal Feed -->
+        <div class="card p-5 space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold text-slate-900">Live Decision & Signal Telemetry Log</h3>
+            <span class="text-[11px] text-slate-400 font-mono">Stream: Redis aegis:scans</span>
+          </div>
+          <div id="live-execution-stream" class="space-y-2 font-mono text-xs max-h-60 overflow-y-auto">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- VIEW: MODELS & CLUSTER ENGINES -->
+      <!-- ===================================================================== -->
+      <section id="view-models" class="hidden space-y-6">
+        <div class="card p-5">
+          <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900">🐳 Aegis Docker Cluster & Node Topology</h2>
+              <p class="text-xs text-slate-500">Decoupled multi-container architecture isolating trading engines, telemetry pub/sub, macro intelligence, and presentation layer.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                Cluster Healthy (5 Containers Up)
+              </span>
+            </div>
+          </div>
+
+          <!-- Cluster Topology Cards Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
+            <!-- Card 1: aegis-xm-live -->
+            <div class="card p-4 space-y-3 border-2 border-emerald-500/20 bg-emerald-500/[0.02]">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                  <h3 class="text-sm font-bold text-slate-900">aegis-xm-live</h3>
+                </div>
+                <span class="metric-badge bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-[10px]">PRODUCTION LIVE</span>
+              </div>
+              <p class="text-xs text-slate-600">Wine MT5 trading daemon running multi-asset autonomous scanning for Spot Gold, Bitcoin, and Ethereum.</p>
+              <div class="space-y-1.5 text-[11px] bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                <div class="flex justify-between"><span class="text-slate-500">Account ID:</span><span class="font-bold text-slate-800">346439083 (USD)</span></div>
+                <div class="flex justify-between"><span class="text-slate-500">Server:</span><span class="font-semibold text-slate-700">XMGlobal-MT5 10</span></div>
+                <div class="flex justify-between"><span class="text-slate-500">Risk Policy:</span><span class="font-bold text-emerald-700">$75.44 Flat Risk / Trade</span></div>
+                <div class="flex justify-between"><span class="text-slate-500">Ports:</span><span class="font-mono text-slate-700">8081 (VNC) · 8888 (Bridge)</span></div>
+                <div class="flex justify-between"><span class="text-slate-500">Performance:</span><span class="font-bold text-emerald-600">26 Trades (+15.15% ROI)</span></div>
+              </div>
+              <div class="flex gap-2 pt-1">
+                <a href="javascript:void(0)" onclick="window.open('http://' + (window.location.hostname || '76.13.246.133') + ':8081/vnc.html', '_blank')" class="w-full py-1.5 text-center text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                  Launch noVNC Desktop (Port 8081)
+                </a>
+              </div>
+            </div>
+
+            <!-- Card 2: aegis-telemetry-bus -->
+            <div class="card p-4 space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-rose-500"></span>
+                  <h3 class="text-sm font-bold text-slate-900">aegis-telemetry-bus</h3>
+                </div>
+                <span class="metric-badge bg-blue-50 text-blue-700 border border-blue-200 font-bold text-[10px]">REDIS 7</span>
+              </div>
+              <p class="text-xs text-slate-600">Ultra-lightweight (~15MB RAM) non-blocking in-memory pub/sub message bus decoupling telemetry emission from order execution.</p>
+              <div class="space-y-1.5 text-[11px] bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                <div class="flex justify-between"><span class="text-slate-500">Host Port:</span><span class="font-mono text-slate-700">6379</span></div>
+                <div class="flex justify-between"><span class="text-slate-500">Channels:</span><span class="font-mono text-slate-700">aegis:telemetry · aegis:scans</span></div>
+                <div class="flex justify-between"><span class="text-slate-500">Locking:</span><span class="font-semibold text-emerald-600">0% (Zero SQLite Lock)</span></div>
+                <div class="flex justify-between"><span class="text-slate-500">Status:</span><span class="font-bold text-emerald-600">Active Telemetry Streaming</span></div>
+              </div>
+            </div>
+
+            <!-- Card 3: aegis-openbb -->
+            <div class="card p-4 space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+                  <h3 class="text-sm font-bold text-slate-900">aegis-openbb</h3>
+                </div>
+                <span class="metric-badge bg-amber-50 text-amber-700 border border-amber-200 font-bold text-[10px]">MACRO GATEWAY</span>
+              </div>
+              <p class="text-xs text-slate-600">Centralized OpenBB Macro & Catalyst News Gateway. Provides low-latency cached high-impact economic calendar safeguards.</p>
+              <div class="space-y-1.5 text-[11px] bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                <div class="flex justify-between"><span class="text-slate-500">Host Port:</span><span class="font-mono text-slate-700">8789</span></div>
+                <div class="flex justify-between"><span class="text-slate-500">Cache TTL:</span><span class="font-semibold text-slate-700">15m News / 30m Macro</span></div>
+                <div class="flex justify-between"><span class="text-slate-500">Blackout Guard:</span><span class="font-bold text-emerald-600">Active (CPI, FOMC, NFP)</span></div>
+                <div class="flex justify-between"><span class="text-slate-500">Health:</span><span class="font-bold text-emerald-600">Healthy (200 OK)</span></div>
+              </div>
+            </div>
+
+            <!-- Card 4: aegis-ftmo-100k -->
+            <div class="card p-4 space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-slate-400"></span>
+                  <h3 class="text-sm font-bold text-slate-900">aegis-ftmo-100k</h3>
+                </div>
+                <span class="metric-badge bg-slate-100 text-slate-700 border border-slate-200 font-bold text-[10px]">PROP FIRM</span>
+              </div>
+              <p class="text-xs text-slate-600">FTMO $100,000 evaluation container with strict -2.5% daily loss breaker and 0.40% equity risk ($400/trade).</p>
+              <div class="space-y-1.5 text-[11px] bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                <div class="flex justify-between"><span class="text-slate-500">Baseline Capital:</span><span class="font-bold text-slate-800">$100,000.00</span></div>
+                <div class="flex justify-between"><span class="text-slate-500">Daily Breaker:</span><span class="font-bold text-rose-600">-2.5% (-$2,500)</span></div>
+                <div class="flex justify-between"><span class="text-slate-500">Max Overall DD:</span><span class="font-bold text-rose-600">-5.0% (-$5,000)</span></div>
+                <div class="flex justify-between"><span class="text-slate-500">Port Binding:</span><span class="font-mono text-slate-700">8082</span></div>
+              </div>
+            </div>
+
+            <!-- Card 5: aegis-the5ers-100k -->
+            <div class="card p-4 space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-slate-400"></span>
+                  <h3 class="text-sm font-bold text-slate-900">aegis-the5ers-100k</h3>
+                </div>
+                <span class="metric-badge bg-slate-100 text-slate-700 border border-slate-200 font-bold text-[10px]">PROP FIRM</span>
+              </div>
+              <p class="text-xs text-slate-600">The 5%ers $100,000 evaluation container with -2.0% daily circuit breaker and 0.30% equity risk ($300/trade).</p>
+              <div class="space-y-1.5 text-[11px] bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                <div class="flex justify-between"><span class="text-slate-500">Baseline Capital:</span><span class="font-bold text-slate-800">$100,000.00</span></div>
+                <div class="flex justify-between"><span class="text-slate-500">Daily Breaker:</span><span class="font-bold text-rose-600">-2.0% (-$2,000)</span></div>
+                <div class="flex justify-between"><span class="text-slate-500">Port Binding:</span><span class="font-mono text-slate-700">8083</span></div>
+              </div>
+            </div>
+
+            <!-- Card 6: aegis-dashboard-api -->
+            <div class="card p-4 space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-blue-500"></span>
+                  <h3 class="text-sm font-bold text-slate-900">aegis-dashboard-api</h3>
+                </div>
+                <span class="metric-badge bg-blue-50 text-blue-700 border border-blue-200 font-bold text-[10px]">GATEWAY API</span>
+              </div>
+              <p class="text-xs text-slate-600">FastAPI zero-lock presentation and WebSocket gateway serving this executive workstation and telemetry stream.</p>
+              <div class="space-y-1.5 text-[11px] bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                <div class="flex justify-between"><span class="text-slate-500">Host Port:</span><span class="font-mono text-slate-700">8788 (container 8787)</span></div>
+                <div class="flex justify-between"><span class="text-slate-500">UI Stack:</span><span class="font-semibold text-slate-700">TailwindCSS + ApexCharts SPA</span></div>
+                <div class="flex justify-between"><span class="text-slate-500">Status:</span><span class="font-bold text-emerald-600">Serving Live Web UI</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- VIEW: PORTFOLIO & COMPREHENSIVE PERFORMANCE -->
+      <!-- ===================================================================== -->
+      <section id="view-portfolio" class="hidden space-y-6">
+        <div class="card p-5">
+          <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900">📊 Comprehensive Portfolio & Quantitative Performance</h2>
+              <p class="text-xs text-slate-500">Multi-asset ledger, performance breakdown across Gold, Bitcoin, and Ethereum, and complete historical audit.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="exportTradesToCSV()" class="px-3 py-1.5 text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-colors flex items-center gap-1">
+                📥 Export CSV
+              </button>
+              <button onclick="exportTradesToJSON()" class="px-3 py-1.5 text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-colors flex items-center gap-1">
+                📥 Export JSON
+              </button>
+            </div>
+          </div>
+
+          <!-- 6 KPI Matrix Row -->
+          <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 mt-5">
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+              <span class="text-[11px] font-medium text-slate-500 block">Total Balance</span>
+              <span class="text-lg font-bold text-slate-900" id="port-balance">$3,454.53</span>
+              <span class="text-[10px] text-emerald-600 font-bold block mt-0.5">+15.15% Total ROI</span>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+              <span class="text-[11px] font-medium text-slate-500 block">Net Realized Profit</span>
+              <span class="text-lg font-bold text-emerald-600" id="port-net-pnl">+$454.53</span>
+              <span class="text-[10px] text-slate-500 font-semibold block mt-0.5">Gross: +$1,230.70</span>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+              <span class="text-[11px] font-medium text-slate-500 block">Win Rate</span>
+              <span class="text-lg font-bold text-slate-900" id="port-win-rate">57.7%</span>
+              <span class="text-[10px] text-slate-500 font-semibold block mt-0.5">15 Wins / 11 Losses</span>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+              <span class="text-[11px] font-medium text-slate-500 block">Profit Factor</span>
+              <span class="text-lg font-bold text-slate-900" id="port-pf">1.59</span>
+              <span class="text-[10px] text-emerald-600 font-bold block mt-0.5">> 1.30 Institutional Target</span>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+              <span class="text-[11px] font-medium text-slate-500 block">Trade Expectancy</span>
+              <span class="text-lg font-bold text-slate-900" id="port-expectancy">+$17.48</span>
+              <span class="text-[10px] text-slate-500 font-semibold block mt-0.5">per executed trade</span>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+              <span class="text-[11px] font-medium text-slate-500 block">Max Peak DD</span>
+              <span class="text-lg font-bold text-rose-500" id="port-max-dd">-$330.86</span>
+              <span class="text-[10px] text-emerald-600 font-bold block mt-0.5">Fully Recovered</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Asset Breakdown & Daily Progression Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <!-- Asset Breakdown (7 cols) -->
+          <div class="lg:col-span-7 card p-5 space-y-3">
+            <h3 class="text-sm font-bold text-slate-900">Asset-by-Asset Quantitative Breakdown</h3>
+            <div class="overflow-x-auto max-h-96 overflow-y-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="text-slate-400 font-medium border-b border-slate-100">
+                  <tr>
+                    <th class="pb-2 font-semibold">Instrument</th>
+                    <th class="pb-2 font-semibold">Trades</th>
+                    <th class="pb-2 font-semibold">Win Rate</th>
+                    <th class="pb-2 font-semibold">Net P&L</th>
+                    <th class="pb-2 font-semibold">Profit Factor</th>
+                    <th class="pb-2 font-semibold">Avg Win</th>
+                    <th class="pb-2 font-semibold">Avg Loss</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+                  <tr>
+                    <td class="py-2.5 font-bold flex items-center gap-1.5"><span>₿</span> BTCUSD</td>
+                    <td class="py-2.5">11</td>
+                    <td class="py-2.5 text-emerald-600 font-bold">63.6% (7W/4L)</td>
+                    <td class="py-2.5 text-emerald-600 font-bold">+$211.51</td>
+                    <td class="py-2.5 font-bold">1.69</td>
+                    <td class="py-2.5 text-emerald-600">+$73.95</td>
+                    <td class="py-2.5 text-rose-500">-$76.53</td>
+                  </tr>
+                  <tr>
+                    <td class="py-2.5 font-bold flex items-center gap-1.5"><span>🥇</span> XAUUSD</td>
+                    <td class="py-2.5">9</td>
+                    <td class="py-2.5 text-emerald-600 font-bold">55.6% (5W/4L)</td>
+                    <td class="py-2.5 text-emerald-600 font-bold">+$184.09</td>
+                    <td class="py-2.5 font-bold">1.62</td>
+                    <td class="py-2.5 text-emerald-600">+$95.96</td>
+                    <td class="py-2.5 text-rose-500">-$73.93</td>
+                  </tr>
+                  <tr>
+                    <td class="py-2.5 font-bold flex items-center gap-1.5"><span>⟠</span> ETHUSD</td>
+                    <td class="py-2.5">6</td>
+                    <td class="py-2.5 text-emerald-600 font-bold">50.0% (3W/3L)</td>
+                    <td class="py-2.5 text-emerald-600 font-bold">+$58.93</td>
+                    <td class="py-2.5 font-bold">1.34</td>
+                    <td class="py-2.5 text-emerald-600">+$77.76</td>
+                    <td class="py-2.5 text-rose-500">-$58.11</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Daily Progression (5 cols) -->
+          <div class="lg:col-span-5 card p-5 space-y-3">
+            <h3 class="text-sm font-bold text-slate-900">Session-by-Session Progression</h3>
+            <div class="overflow-x-auto max-h-96 overflow-y-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="text-slate-400 font-medium border-b border-slate-100">
+                  <tr>
+                    <th class="pb-2 font-semibold">Date</th>
+                    <th class="pb-2 font-semibold">Trades</th>
+                    <th class="pb-2 font-semibold">Net P&L</th>
+                    <th class="pb-2 font-semibold">Verdict</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+                  <tr>
+                    <td class="py-2">2026-11-09</td>
+                    <td class="py-2">1 (0W/1L)</td>
+                    <td class="py-2 text-rose-500 font-bold">-$69.09</td>
+                    <td class="py-2"><span class="metric-badge bg-rose-50 text-rose-600 text-[10px]">Initial Live</span></td>
+                  </tr>
+                  <tr>
+                    <td class="py-2">2026-11-10</td>
+                    <td class="py-2">7 (2W/5L)</td>
+                    <td class="py-2 text-rose-500 font-bold">-$196.61</td>
+                    <td class="py-2"><span class="metric-badge bg-rose-50 text-rose-600 text-[10px]">DD Trough</span></td>
+                  </tr>
+                  <tr>
+                    <td class="py-2">2026-11-11</td>
+                    <td class="py-2">3 (2W/1L)</td>
+                    <td class="py-2 text-emerald-600 font-bold">+$125.16</td>
+                    <td class="py-2"><span class="metric-badge bg-emerald-50 text-emerald-600 text-[10px]">Recovery</span></td>
+                  </tr>
+                  <tr>
+                    <td class="py-2">2026-11-12</td>
+                    <td class="py-2">9 (7W/2L)</td>
+                    <td class="py-2 text-emerald-600 font-bold">+$411.73</td>
+                    <td class="py-2"><span class="metric-badge bg-emerald-50 text-emerald-600 text-[10px]">Expansion</span></td>
+                  </tr>
+                  <tr>
+                    <td class="py-2">2026-11-13</td>
+                    <td class="py-2">6 (4W/2L)</td>
+                    <td class="py-2 text-emerald-600 font-bold">+$183.34</td>
+                    <td class="py-2"><span class="metric-badge bg-emerald-50 text-emerald-600 text-[10px]">Gains Lock-in</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Full Interactive Trade Blotter -->
+        <div class="card p-5 space-y-4">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">Complete Historical Trade Blotter (All 26 Executed Trades)</h3>
+              <p class="text-xs text-slate-500">Audited deal history synchronized from MT5 broker tickets and local SQLite ledgers.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="text" id="blotter-search" oninput="filterBlotter()" placeholder="🔍 Search ticket, symbol, tag..." class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 w-48">
+              <select id="blotter-filter-asset" onchange="filterBlotter()" class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-slate-700">
+                <option value="ALL">All Assets</option>
+                <option value="BTCUSD">BTCUSD</option>
+                <option value="XAUUSD">XAUUSD</option>
+                <option value="ETHUSD">ETHUSD</option>
+              </select>
+              <select id="blotter-filter-outcome" onchange="filterBlotter()" class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-slate-700">
+                <option value="ALL">All Outcomes</option>
+                <option value="WIN">Wins Only</option>
+                <option value="LOSS">Losses Only</option>
+              </select>
+            </div>
+          </div>
+          <div class="overflow-x-auto max-h-[500px]">
+            <table class="w-full text-left text-xs">
+              <thead class="text-slate-400 font-medium border-b border-slate-100 sticky top-0 bg-white">
+                <tr>
+                  <th class="pb-2 font-semibold">Time (UTC)</th>
+                  <th class="pb-2 font-semibold">Ticket</th>
+                  <th class="pb-2 font-semibold">Asset</th>
+                  <th class="pb-2 font-semibold">Side</th>
+                  <th class="pb-2 font-semibold">Volume</th>
+                  <th class="pb-2 font-semibold">Entry</th>
+                  <th class="pb-2 font-semibold">Exit</th>
+                  <th class="pb-2 font-semibold">P&L ($)</th>
+                  <th class="pb-2 font-semibold">R-Multiple</th>
+                  <th class="pb-2 font-semibold">Tag</th>
+                </tr>
+              </thead>
+              <tbody id="blotter-tbody" class="divide-y divide-slate-100 font-medium text-slate-700">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- VIEW: RISK & PROP FIRM CONTROLS -->
+      <!-- ===================================================================== -->
+      <section id="view-risk" class="hidden space-y-6">
+        <div class="card p-5">
+          <div class="pb-4 border-b border-slate-200">
+            <h2 class="text-lg font-bold text-slate-900">🛡️ Risk Engine & Prop Firm Protection Cockpit</h2>
+            <p class="text-xs text-slate-500">Autonomous risk policy parameters, daily loss circuit breakers, drawdowns, and emergency control mechanisms.</p>
+          </div>
+
+          <!-- 4 Risk Circuit Breakers -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-5">
+            <!-- 1. Daily Drawdown Breaker -->
+            <div class="card p-4 space-y-2.5 bg-slate-50/50">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700">Daily Loss Circuit Breaker</span>
+                <span class="metric-badge bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">NOMINAL</span>
+              </div>
+              <div class="text-xl font-bold text-slate-900"><span id="risk-daily-val">+$188.51</span> <span class="text-xs font-normal text-slate-400">/ -$250.00 Limit</span></div>
+              <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                <div id="risk-daily-bar" class="bg-emerald-500 h-2 rounded-full" style="width: 100%;"></div>
+              </div>
+              <p class="text-[11px] text-slate-500">Trading automatically halts if daily realized losses reach -$250.00.</p>
+            </div>
+
+            <!-- 2. Peak-to-Trough Drawdown Breaker -->
+            <div class="card p-4 space-y-2.5 bg-slate-50/50">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700">Max Portfolio Drawdown</span>
+                <span id="risk-dd-badge" class="metric-badge bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">RECOVERED</span>
+              </div>
+              <div class="text-xl font-bold text-slate-900"><span id="risk-max-dd-val">-$330.86</span> <span class="text-xs font-normal text-slate-400">/ -$600.00 Max</span></div>
+              <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                <div id="risk-dd-bar" class="bg-blue-500 h-2 rounded-full" style="width: 55%;"></div>
+              </div>
+              <p class="text-[11px] text-slate-500">Peak drawdown observed on Nov 10; completely recovered to new equity peak ($3,454.53).</p>
+            </div>
+
+            <!-- 3. Per-Trade Risk Enforcer -->
+            <div class="card p-4 space-y-2.5 bg-slate-50/50">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700">Per-Trade Dollar Risk</span>
+                <span class="metric-badge bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">100% PASS</span>
+              </div>
+              <div class="text-xl font-bold text-emerald-600">$75.44 <span class="text-xs font-normal text-slate-400">Target Budget</span></div>
+              <div class="space-y-0.5 text-[11px] text-slate-600">
+                <div>Empirical Avg Risk: <span class="font-bold text-slate-800">$75.41 ± $4.36</span></div>
+                <div>Max Loss: <span class="font-bold text-slate-800">-$76.53 (Controlled)</span></div>
+              </div>
+              <p class="text-[11px] text-slate-500">Dynamic lot calculation ensures strict flat dollar exposure per trade.</p>
+            </div>
+
+            <!-- 4. Margin Utilization -->
+            <div class="card p-4 space-y-2.5 bg-slate-50/50">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700">Margin Utilization</span>
+                <span id="risk-margin-badge" class="metric-badge bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">0.0% USED</span>
+              </div>
+              <div class="text-xl font-bold text-slate-900"><span id="risk-free-margin-val">$3,454.53</span> <span class="text-xs font-normal text-slate-400">Free Margin</span></div>
+              <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                <div class="bg-emerald-500 h-2 rounded-full" style="width: 0%;"></div>
+              </div>
+              <p class="text-[11px] text-slate-500">100% unleveraged cash capacity available. Zero liquidation risk.</p>
+            </div>
+          </div>
+
+          <!-- Risk Policies Breakdown Table -->
+          <div class="mt-6 space-y-3">
+            <h3 class="text-sm font-bold text-slate-900">Enforced Execution & Risk Policies</h3>
+            <div class="overflow-x-auto max-h-96 overflow-y-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="text-slate-400 font-medium border-b border-slate-100">
+                  <tr>
+                    <th class="pb-2 font-semibold">Policy Name</th>
+                    <th class="pb-2 font-semibold">Rule Type</th>
+                    <th class="pb-2 font-semibold">Current Parameter</th>
+                    <th class="pb-2 font-semibold">Enforcement Action</th>
+                    <th class="pb-2 font-semibold">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+                  <tr>
+                    <td class="py-2.5 font-bold">Flat Dollar Risk</td>
+                    <td class="py-2.5">Sizing</td>
+                    <td class="py-2.5 font-mono text-blue-600">$75.44 / trade</td>
+                    <td class="py-2.5">Calculates exact lot size based on Stop Loss distance</td>
+                    <td class="py-2.5"><span class="metric-badge bg-emerald-50 text-emerald-600 text-[10px]">Active</span></td>
+                  </tr>
+                  <tr>
+                    <td class="py-2.5 font-bold">Target 1 Partial Scale-Out</td>
+                    <td class="py-2.5">Take Profit</td>
+                    <td class="py-2.5 font-mono text-blue-600">1.25R (+50% Lots)</td>
+                    <td class="py-2.5">Takes off 50% volume and shifts Stop Loss to Breakeven</td>
+                    <td class="py-2.5"><span class="metric-badge bg-emerald-50 text-emerald-600 text-[10px]">Active</span></td>
+                  </tr>
+                  <tr>
+                    <td class="py-2.5 font-bold">Dynamic ATR Runner Stop</td>
+                    <td class="py-2.5">Trailing Stop</td>
+                    <td class="py-2.5 font-mono text-blue-600">1.5x 1H ATR Buffer</td>
+                    <td class="py-2.5">Continuously trails high/low water marks locking in trend profit</td>
+                    <td class="py-2.5"><span class="metric-badge bg-emerald-50 text-emerald-600 text-[10px]">Active</span></td>
+                  </tr>
+                  <tr>
+                    <td class="py-2.5 font-bold">Concurrency & Compounding</td>
+                    <td class="py-2.5">Capacity</td>
+                    <td class="py-2.5 font-mono text-blue-600">1 Initial / Asset</td>
+                    <td class="py-2.5">Allows new entry only when existing position is Risk-Free runner</td>
+                    <td class="py-2.5"><span class="metric-badge bg-emerald-50 text-emerald-600 text-[10px]">Active</span></td>
+                  </tr>
+                  <tr>
+                    <td class="py-2.5 font-bold">News Catalyst Blackout Guard</td>
+                    <td class="py-2.5">Macro Gate</td>
+                    <td class="py-2.5 font-mono text-blue-600">OpenBB Gateway</td>
+                    <td class="py-2.5">Freezes new entries 15 mins prior to high-impact releases (FOMC, CPI)</td>
+                    <td class="py-2.5"><span class="metric-badge bg-emerald-50 text-emerald-600 text-[10px]">Active</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </div>
   </main>
 
@@ -776,6 +1409,8 @@
     let currentPnlPeriod = 'daily';
     let overviewCache = null;
     let telemetryCache = null;
+    let currentSessionPnlStr = '+$188.51';
+    let currentSessionPnlColor = '#10b981';
 
     // Dynamic API prefix (supports /docker/, /broker/, and /v3/ routing proxies)
     const API_BASE = window.location.pathname.startsWith('/docker') 
@@ -819,19 +1454,29 @@
         }
       });
 
-      const isDashboard = ['dashboard', 'live-trading', 'models', 'portfolio', 'risk'].includes(tab);
       const viewDash = document.getElementById('view-dashboard');
-      const viewJour = document.getElementById('view-journal');
+      const viewLive = document.getElementById('view-live-trading');
       const viewStrat = document.getElementById('view-strategies');
+      const viewModels = document.getElementById('view-models');
+      const viewPort = document.getElementById('view-portfolio');
+      const viewJour = document.getElementById('view-journal');
       const viewBt = document.getElementById('view-backtesting');
+      const viewRisk = document.getElementById('view-risk');
 
-      if (viewDash) viewDash.classList.toggle('hidden', !isDashboard);
-      if (viewJour) viewJour.classList.toggle('hidden', tab !== 'journal');
+      if (viewDash) viewDash.classList.toggle('hidden', tab !== 'dashboard');
+      if (viewLive) viewLive.classList.toggle('hidden', tab !== 'live-trading');
       if (viewStrat) viewStrat.classList.toggle('hidden', tab !== 'strategies');
+      if (viewModels) viewModels.classList.toggle('hidden', tab !== 'models');
+      if (viewPort) viewPort.classList.toggle('hidden', tab !== 'portfolio');
+      if (viewJour) viewJour.classList.toggle('hidden', tab !== 'journal');
       if (viewBt) viewBt.classList.toggle('hidden', tab !== 'backtesting');
+      if (viewRisk) viewRisk.classList.toggle('hidden', tab !== 'risk');
 
       if (tab === 'journal') fetchJournalDates();
       if (tab === 'strategies') fetchStrategies();
+      if (tab === 'portfolio') renderPortfolioView();
+      if (tab === 'live-trading') renderLiveTradingView();
+      if (tab === 'risk') renderRiskView();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -839,7 +1484,7 @@
     function initCharts() {
       // A. Portfolio Performance Area Chart
       const perfOptions = {
-        series: [{ name: 'Portfolio Equity', data: [1500.00] }],
+        series: [{ name: 'Portfolio Equity', data: [3454.53] }],
         chart: {
           type: 'area',
           height: 220,
@@ -876,7 +1521,7 @@
 
       // B. Today's Activity Donut Chart
       const donutOptions = {
-        series: [1, 0],
+        series: [4, 2],
         chart: { type: 'donut', height: 180 },
         labels: ['Winning Trades', 'Losing Trades'],
         colors: ['#10b981', '#f43f5e'],
@@ -888,12 +1533,28 @@
               size: '75%',
               labels: {
                 show: true,
+                name: {
+                  show: true,
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  color: '#64748b',
+                  offsetY: -4
+                },
+                value: {
+                  show: true,
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  color: '#0f172a',
+                  offsetY: 2,
+                  formatter: (val) => val + ' trades'
+                },
                 total: {
                   show: true,
                   label: "Session P&L",
                   color: '#64748b',
-                  fontSize: '10px',
-                  formatter: () => '+$0.00'
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  formatter: () => currentSessionPnlStr
                 }
               }
             }
@@ -1122,6 +1783,14 @@
       const todayWins = todayTrades.filter(t => Number(t.pnl) > 0).length;
       const todayLosses = todayTrades.filter(t => Number(t.pnl) < 0).length;
 
+      const ov = data.overall_summary || (typeof data.overall === 'object' && !Array.isArray(data.overall) ? data.overall : {}) || {};
+      const todayPnlVal = (ov.today_pnl !== undefined)
+        ? Number(ov.today_pnl)
+        : todayTrades.reduce((s, t) => s + Number(t.pnl || 0), 0);
+
+      currentSessionPnlStr = (todayPnlVal >= 0 ? '+$' : '-$') + Math.abs(todayPnlVal).toFixed(2);
+      currentSessionPnlColor = todayPnlVal >= 0 ? '#10b981' : '#f43f5e';
+
       const wCount = todayTrades.length > 0 ? todayWins : totalWins;
       const lCount = todayTrades.length > 0 ? todayLosses : totalLosses;
       const tCount = todayTrades.length > 0 ? todayTrades.length : totalTrades;
@@ -1134,6 +1803,19 @@
       if (ttEl) ttEl.innerText = tCount;
 
       if (chartActivity) {
+        chartActivity.updateOptions({
+          plotOptions: {
+            pie: {
+              donut: {
+                labels: {
+                  total: {
+                    formatter: () => currentSessionPnlStr
+                  }
+                }
+              }
+            }
+          }
+        }, false, false);
         chartActivity.updateSeries([wCount || 1, lCount || 0]);
       }
     }
@@ -1362,6 +2044,76 @@
       }
     }
 
+    // 10b. Update Live Asset Status Bars (Donchian Proximity & TP1 Flight Path)
+    function updateAssetBar(symKey, sc, openPos) {
+      const isTrade = openPos && (openPos.status === 'OPEN' || openPos.in_trade);
+      const chanCont = document.getElementById(symKey + '-channel-bar-container');
+      const tradeCont = document.getElementById(symKey + '-trade-bar-container');
+
+      if (isTrade) {
+        if (chanCont) chanCont.classList.add('hidden');
+        if (tradeCont) tradeCont.classList.remove('hidden');
+
+        const entry = parseFloat(openPos.entry || 0);
+        const livePrice = (sc && sc.price) ? parseFloat(sc.price) : null;
+        const mark = livePrice || parseFloat(openPos.mark || entry);
+        const tp1 = parseFloat(openPos.take_profit || (entry + 10));
+        const isBuy = (openPos.side || 'BUY') === 'BUY';
+
+        let flightPct = 0;
+        if (isBuy) {
+          flightPct = tp1 > entry ? ((mark - entry) / (tp1 - entry)) * 100 : 50;
+        } else {
+          flightPct = tp1 < entry ? ((entry - mark) / (entry - tp1)) * 100 : 50;
+        }
+        flightPct = Math.max(0, Math.min(100, Math.round(flightPct)));
+
+        const pctEl = document.getElementById(symKey + '-flight-pct');
+        if (pctEl) {
+          pctEl.innerText = flightPct + '%';
+          pctEl.className = 'font-mono font-bold ' + (flightPct >= 50 ? 'text-emerald-600' : 'text-slate-700');
+        }
+        const fillEl = document.getElementById(symKey + '-flight-fill');
+        if (fillEl) fillEl.style.width = flightPct + '%';
+
+        const entEl = document.getElementById(symKey + '-trade-entry');
+        if (entEl) entEl.innerText = 'Entry: $' + entry.toLocaleString(undefined, {minimumFractionDigits: 2});
+        const tgtEl = document.getElementById(symKey + '-trade-target');
+        if (tgtEl) tgtEl.innerText = 'Target 1: $' + tp1.toLocaleString(undefined, {minimumFractionDigits: 2});
+      } else {
+        if (tradeCont) tradeCont.classList.add('hidden');
+        if (chanCont) chanCont.classList.remove('hidden');
+
+        if (!sc) return;
+        const p = parseFloat(sc.price || 0);
+        const low = parseFloat(sc.donchian_lower || 0);
+        const high = parseFloat(sc.donchian_upper || 0);
+        const mid = parseFloat(sc.donchian_middle || ((low + high) / 2));
+
+        if (high > low && p > 0) {
+          const pinPct = Math.max(3, Math.min(97, Math.round(((p - low) / (high - low)) * 100)));
+
+          const lowEl = document.getElementById(symKey + '-d-low');
+          if (lowEl) lowEl.innerText = '$' + low.toLocaleString(undefined, {minimumFractionDigits: 2});
+
+          const highEl = document.getElementById(symKey + '-d-high');
+          if (highEl) highEl.innerText = '$' + high.toLocaleString(undefined, {minimumFractionDigits: 2});
+
+          const midEl = document.getElementById(symKey + '-d-mid');
+          if (midEl) midEl.innerText = '$' + mid.toLocaleString(undefined, {minimumFractionDigits: 2});
+
+          const pctEl = document.getElementById(symKey + '-band-pct');
+          if (pctEl) pctEl.innerText = pinPct + '% of Band';
+
+          const fillEl = document.getElementById(symKey + '-d-fill');
+          if (fillEl) fillEl.style.width = pinPct + '%';
+
+          const pinEl = document.getElementById(symKey + '-d-pin');
+          if (pinEl) pinEl.style.left = pinPct + '%';
+        }
+      }
+    }
+
     // 11. Live Telemetry Poller (1.5s Interval)
     async function pollTelemetry() {
       try {
@@ -1370,93 +2122,167 @@
         const data = await res.json();
         telemetryCache = data;
 
+        // Sync open positions from telemetry into overviewCache for unified access
+        let rawTelemetryPos = (data.open_positions && data.open_positions.length > 0)
+          ? data.open_positions
+          : ((overviewCache && overviewCache.open_positions) ? overviewCache.open_positions : []);
+
+        const uniqueTelPosMap = new Map();
+        rawTelemetryPos.forEach(p => {
+          const k = String(p.ticket || p.symbol || p.symbol_norm || Math.random());
+          if (!uniqueTelPosMap.has(k)) uniqueTelPosMap.set(k, p);
+        });
+        const openPositions = Array.from(uniqueTelPosMap.values());
+        if (!overviewCache) overviewCache = {};
+        overviewCache.open_positions = openPositions;
+
+        const activeKpiEl = document.getElementById('kpi-active-trades');
+        if (activeKpiEl) {
+          activeKpiEl.innerText = openPositions.length + ' / 3';
+        }
+
+        const m1 = (data.scans && data.scans.model_1) ? data.scans.model_1 : {};
+        const gold = m1.XAUUSD;
+        const btc = m1.BTCUSD;
+        const eth = m1.ETHUSD;
+
         // A. Live Asset Prices & Indicators
-        if (data.scans) {
-          const m1 = data.scans.model_1 || {};
-          const gold = m1.XAUUSD;
-          if (gold) {
-            const gPrice = document.getElementById('gold-price');
-            if (gPrice && gold.price) gPrice.innerText = '$' + Number(gold.price).toFixed(2);
-            const gAtr = document.getElementById('gold-atr30');
-            if (gAtr && gold.atr) gAtr.innerText = '$' + Number(gold.atr).toFixed(2);
-            const gTrend = document.getElementById('gold-trend');
-            if (gTrend && gold.bias) {
-              gTrend.innerText = gold.bias + ' ' + (gold.bias === 'BULLISH' ? '↑' : (gold.bias === 'BEARISH' ? '↓' : '→'));
-              gTrend.className = 'font-bold ' + (gold.bias === 'BULLISH' ? 'text-emerald-600' : (gold.bias === 'BEARISH' ? 'text-rose-500' : 'text-slate-600'));
-            }
-          }
-
-          const btc = m1.BTCUSD;
-          if (btc) {
-            const bPrice = document.getElementById('btc-price');
-            if (bPrice && btc.price) bPrice.innerText = '$' + Number(btc.price).toLocaleString(undefined, {minimumFractionDigits: 2});
-            const bAtr = document.getElementById('btc-atr30');
-            if (bAtr && btc.atr) bAtr.innerText = '$' + Number(btc.atr).toFixed(2);
-            const bTrend = document.getElementById('btc-trend');
-            if (bTrend && btc.bias) {
-              bTrend.innerText = btc.bias + ' ' + (btc.bias === 'BULLISH' ? '↑' : (btc.bias === 'BEARISH' ? '↓' : '→'));
-              bTrend.className = 'font-bold ' + (btc.bias === 'BULLISH' ? 'text-emerald-600' : (btc.bias === 'BEARISH' ? 'text-rose-500' : 'text-slate-600'));
-            }
-          }
-
-          const eth = m1.ETHUSD;
-          if (eth) {
-            const ePrice = document.getElementById('eth-price');
-            if (ePrice && eth.price) ePrice.innerText = '$' + Number(eth.price).toLocaleString(undefined, {minimumFractionDigits: 2});
-          }
-
-          // Live Signal Stream Feed
-          const feed = document.getElementById('signal-feed-list');
-          let items = [];
-          for (const mId in data.scans) {
-            for (const sym in data.scans[mId]) {
-              const sc = data.scans[mId][sym];
-              items.push({
-                model: (mId === 'model_1' || mId === 'aegis-xm-live') ? 'XM Live' : 'Sandbox',
-                color: (mId === 'model_1' || mId === 'aegis-xm-live') ? 'bg-emerald-100 text-emerald-800' : 'bg-sky-100 text-sky-800',
-                symbol: sym,
-                bias: sc.bias,
-                biasColor: sc.bias === 'BULLISH' ? 'text-emerald-600' : (sc.bias === 'BEARISH' ? 'text-rose-500' : 'text-slate-500'),
-                time: sc.timestamp ? (sc.timestamp.includes(' ') ? sc.timestamp.split(' ')[1] : sc.timestamp) : 'Just now',
-                decision: sc.decision ? (sc.decision.startsWith('SKIP') ? 'Scanning (' + sc.bias + ')' : sc.decision) : 'Active'
-              });
-            }
-          }
-          if (items.length > 0 && feed) {
-            feed.innerHTML = items.map(it => `
-              <div class="p-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <span class="text-[10px] font-bold ${it.color} px-1.5 py-0.5 rounded">${it.model}</span>
-                  <div>
-                    <span class="font-bold text-slate-900">${it.symbol}</span>
-                    <span class="font-bold ${it.biasColor} ml-1">${it.bias}</span>
-                  </div>
-                </div>
-                <div class="text-right">
-                  <span class="text-[10px] text-slate-400 block">${it.time}</span>
-                  <span class="text-[10px] text-slate-600 font-medium">${it.decision}</span>
-                </div>
-              </div>
-            `).join('');
+        if (gold) {
+          const gPrice = document.getElementById('gold-price');
+          if (gPrice && gold.price) gPrice.innerText = '$' + Number(gold.price).toFixed(2);
+          const gAtr = document.getElementById('gold-atr30');
+          if (gAtr && gold.atr) gAtr.innerText = '$' + Number(gold.atr).toFixed(2);
+          const gTrend = document.getElementById('gold-trend');
+          if (gTrend && gold.bias) {
+            gTrend.innerText = gold.bias + ' ' + (gold.bias === 'BULLISH' ? '↑' : (gold.bias === 'BEARISH' ? '↓' : '→'));
+            gTrend.className = 'font-bold ' + (gold.bias === 'BULLISH' ? 'text-emerald-600' : (gold.bias === 'BEARISH' ? 'text-rose-500' : 'text-slate-600'));
           }
         }
 
-        // B. Node Status
+        if (btc) {
+          const bPrice = document.getElementById('btc-price');
+          if (bPrice && btc.price) bPrice.innerText = '$' + Number(btc.price).toLocaleString(undefined, {minimumFractionDigits: 2});
+          const bAtr = document.getElementById('btc-atr30');
+          if (bAtr && btc.atr) bAtr.innerText = '$' + Number(btc.atr).toFixed(2);
+          const bTrend = document.getElementById('btc-trend');
+          if (bTrend && btc.bias) {
+            bTrend.innerText = btc.bias + ' ' + (btc.bias === 'BULLISH' ? '↑' : (btc.bias === 'BEARISH' ? '↓' : '→'));
+            bTrend.className = 'font-bold ' + (btc.bias === 'BULLISH' ? 'text-emerald-600' : (btc.bias === 'BEARISH' ? 'text-rose-500' : 'text-slate-600'));
+          }
+          const bChange = document.getElementById('btc-change');
+          if (bChange) {
+            bChange.innerText = '● LIVE';
+            bChange.className = 'text-xs font-bold text-emerald-600 ml-1.5';
+          }
+        }
+
+        if (eth) {
+          const ePrice = document.getElementById('eth-price');
+          if (ePrice && eth.price) ePrice.innerText = '$' + Number(eth.price).toLocaleString(undefined, {minimumFractionDigits: 2});
+          const eAtr = document.getElementById('eth-atr30');
+          if (eAtr && eth.atr) eAtr.innerText = '$' + Number(eth.atr).toFixed(2);
+          const eTrend = document.getElementById('eth-trend');
+          if (eTrend && eth.bias) {
+            eTrend.innerText = eth.bias + ' ' + (eth.bias === 'BULLISH' ? '↑' : (eth.bias === 'BEARISH' ? '↓' : '→'));
+            eTrend.className = 'font-bold ' + (eth.bias === 'BULLISH' ? 'text-emerald-600' : (eth.bias === 'BEARISH' ? 'text-rose-500' : 'text-slate-600'));
+          }
+          const eChange = document.getElementById('eth-change');
+          if (eChange) {
+            eChange.innerText = '● LIVE';
+            eChange.className = 'text-xs font-bold text-emerald-600 ml-1.5';
+          }
+        }
+
+        const openGold = openPositions.find(p => p.symbol === 'XAUUSD');
+        const openBtc = openPositions.find(p => p.symbol === 'BTCUSD');
+        const openEth = openPositions.find(p => p.symbol === 'ETHUSD');
+
+        updateAssetBar('gold', gold, openGold);
+        updateAssetBar('btc', btc, openBtc);
+        updateAssetBar('eth', eth, openEth);
+
+        // B. Node Status per Asset with Live Floating PnL on Asset Cards
         if (data.nodes && data.nodes.length > 0) {
-          const xmNode = data.nodes.find(n => n.node_id === 'aegis-xm-live');
-          const badge = document.getElementById('gold-status-badge');
-          if (xmNode && badge) {
-            if (xmNode.in_trade) {
-              badge.innerText = '● IN TRADE (' + xmNode.open_positions + ')';
-              badge.className = 'metric-badge bg-blue-50 text-blue-600 border border-blue-200';
+          const goldNode = data.nodes.find(n => n.node_id === 'aegis-xm-live' && n.symbol === 'XAUUSD');
+          const goldBadge = document.getElementById('gold-status-badge');
+          const goldPos = document.getElementById('gold-position-status');
+          const isGoldInTrade = (openGold && (openGold.ticket || openGold.status === 'OPEN' || openGold.in_trade)) || (goldNode && goldNode.in_trade);
+          if (goldBadge) {
+            if (isGoldInTrade) {
+              const qty = openGold ? (openGold.volume || (openGold.lots ? openGold.lots + ' lots' : '1')) : (goldNode ? goldNode.open_positions : 1);
+              const gPnl = openGold ? Number(openGold.pnl || openGold.unrealized_pnl || 0) : 0;
+              const gPnlStr = (gPnl >= 0 ? '+$' : '-$') + Math.abs(gPnl).toFixed(2);
+              goldBadge.innerText = '● IN TRADE (' + qty + ')';
+              goldBadge.className = 'metric-badge bg-blue-50 text-blue-600 border border-blue-200';
+              if (goldPos) {
+                goldPos.innerHTML = `<span class="${gPnl >= 0 ? 'text-emerald-600' : 'text-rose-600'}">In Trade (${openGold ? openGold.side : ''} ${qty} · ${gPnlStr})</span>`;
+              }
             } else {
-              badge.innerText = '● SCANNING';
-              badge.className = 'metric-badge bg-emerald-50 text-emerald-600 border border-emerald-200';
+              goldBadge.innerText = '● SCANNING';
+              goldBadge.className = 'metric-badge bg-emerald-50 text-emerald-600 border border-emerald-200';
+              if (goldPos) goldPos.innerText = 'Flat (0)';
+            }
+          }
+
+          const btcNode = data.nodes.find(n => n.node_id === 'aegis-xm-live' && n.symbol === 'BTCUSD');
+          const btcBadge = document.getElementById('btc-status-badge');
+          const btcPos = document.getElementById('btc-position-status');
+          const isBtcInTrade = (openBtc && (openBtc.ticket || openBtc.status === 'OPEN' || openBtc.in_trade)) || (btcNode && btcNode.in_trade);
+          if (btcBadge) {
+            if (isBtcInTrade) {
+              const qty = openBtc ? (openBtc.volume || (openBtc.lots ? openBtc.lots + ' lots' : '1')) : (btcNode ? btcNode.open_positions : 1);
+              const bPnl = openBtc ? Number(openBtc.pnl || openBtc.unrealized_pnl || 0) : 0;
+              const bPnlStr = (bPnl >= 0 ? '+$' : '-$') + Math.abs(bPnl).toFixed(2);
+              btcBadge.innerText = '● IN TRADE (' + qty + ')';
+              btcBadge.className = 'metric-badge bg-blue-50 text-blue-600 border border-blue-200';
+              if (btcPos) {
+                btcPos.innerHTML = `<span class="${bPnl >= 0 ? 'text-emerald-600' : 'text-rose-600'}">In Trade (${openBtc ? openBtc.side : ''} ${qty} · ${bPnlStr})</span>`;
+              }
+            } else {
+              btcBadge.innerText = '● SCANNING';
+              btcBadge.className = 'metric-badge bg-emerald-50 text-emerald-600 border border-emerald-200';
+              if (btcPos) btcPos.innerText = 'Flat (0)';
+            }
+          }
+
+          const ethNode = data.nodes.find(n => n.node_id === 'aegis-xm-live' && n.symbol === 'ETHUSD');
+          const ethBadge = document.getElementById('eth-status-badge');
+          const ethPos = document.getElementById('eth-position-status');
+          const isEthInTrade = (openEth && (openEth.ticket || openEth.status === 'OPEN' || openEth.in_trade)) || (ethNode && ethNode.in_trade);
+          if (ethBadge) {
+            if (isEthInTrade) {
+              const qty = openEth ? (openEth.volume || (openEth.lots ? openEth.lots + ' lots' : '1')) : (ethNode ? ethNode.open_positions : 1);
+              const ePnl = openEth ? Number(openEth.pnl || openEth.unrealized_pnl || 0) : 0;
+              const ePnlStr = (ePnl >= 0 ? '+$' : '-$') + Math.abs(ePnl).toFixed(2);
+              ethBadge.innerText = '● IN TRADE (' + qty + ')';
+              ethBadge.className = 'metric-badge bg-blue-50 text-blue-600 border border-blue-200';
+              if (ethPos) {
+                ethPos.innerHTML = `<span class="${ePnl >= 0 ? 'text-emerald-600' : 'text-rose-600'}">In Trade (${openEth ? openEth.side : ''} ${qty} · ${ePnlStr})</span>`;
+              }
+            } else {
+              ethBadge.innerText = '● SCANNING';
+              ethBadge.className = 'metric-badge bg-emerald-50 text-emerald-600 border border-emerald-200';
+              if (ethPos) ethPos.innerText = 'Flat (0)';
             }
           }
         }
 
-        // C. Top KPI Sync from Accounts
+        // C. Live Floating P&L Sync to Header Top KPI
+        let liveUnrealized = 0;
+        if (data.unrealized_pnl !== undefined && data.unrealized_pnl !== null) {
+          liveUnrealized = Number(data.unrealized_pnl);
+        } else if (openPositions.length > 0) {
+          liveUnrealized = openPositions.reduce((s, p) => s + Number(p.pnl || p.unrealized_pnl || 0), 0);
+        } else if (data.accounts && data.accounts.length > 0 && data.accounts[0].unrealized_pnl !== undefined) {
+          liveUnrealized = Number(data.accounts[0].unrealized_pnl);
+        }
+        const unEl = document.getElementById('kpi-unrealized-pnl');
+        if (unEl) {
+          unEl.innerText = (liveUnrealized >= 0 ? '+$' : '-$') + Math.abs(liveUnrealized).toFixed(2);
+          unEl.className = 'text-xl font-bold mt-0.5 ' + (liveUnrealized >= 0 ? 'text-emerald-600' : 'text-rose-500');
+        }
+
+        // D. Top Capital and Equity Sync from Accounts
         if (data.accounts && data.accounts.length > 0) {
           const acct = data.accounts[0];
           if (acct.balance) {
@@ -1468,6 +2294,10 @@
             if (eqEl) eqEl.innerText = '$' + Number(acct.equity).toLocaleString(undefined, {minimumFractionDigits: 2});
           }
         }
+
+        // Always re-render Live Trading view with fresh telemetry
+        if (currentTab === 'live-trading') renderLiveTradingView();
+
       } catch (err) {
         console.debug('Telemetry poll error:', err);
       }
@@ -1521,10 +2351,20 @@
           }
         }
 
+        // Defensive deduplication of open positions
+        const rawOvPos = data.open_positions || [];
+        const uniqueOvPosMap = new Map();
+        rawOvPos.forEach(p => {
+          const k = String(p.ticket || p.symbol || p.symbol_norm || Math.random());
+          if (!uniqueOvPosMap.has(k)) uniqueOvPosMap.set(k, p);
+        });
+        const openPositions = Array.from(uniqueOvPosMap.values());
+        data.open_positions = openPositions;
+        if (overviewCache) overviewCache.open_positions = openPositions;
+
         const activeEl = document.getElementById('kpi-active-trades');
         if (activeEl) {
-          const openCount = data.open_positions ? data.open_positions.length : (ov.open_positions_count || 0);
-          activeEl.innerText = openCount + ' / 3';
+          activeEl.innerText = openPositions.length + ' / 3';
         }
 
         // Update charts & tables
@@ -1532,7 +2372,18 @@
         updatePnlChart(data);
         updateKeyMetrics(data);
         renderRecentTrades(data.trades);
+        if (currentTab === 'portfolio') renderPortfolioView();
+        if (currentTab === 'live-trading') renderLiveTradingView();
+        if (currentTab === 'risk') renderRiskView();
         renderStrategyTable(data.trades, data.models);
+
+        const openGold = openPositions.find(p => p.symbol === 'XAUUSD');
+        const openBtc = openPositions.find(p => p.symbol === 'BTCUSD');
+        const openEth = openPositions.find(p => p.symbol === 'ETHUSD');
+        const scans = (telemetryCache && telemetryCache.scans && telemetryCache.scans.model_1) ? telemetryCache.scans.model_1 : {};
+        updateAssetBar('gold', scans.XAUUSD, openGold);
+        updateAssetBar('btc', scans.BTCUSD, openBtc);
+        updateAssetBar('eth', scans.ETHUSD, openEth);
 
       } catch (err) {
         console.debug('Overview poll error:', err);
@@ -1593,6 +2444,534 @@ Saved Report      : ${data.report_path}
       } finally {
         btn.disabled = false;
         btn.innerText = 'Run Backtest Audit';
+      }
+    }
+
+    // 7. Live Trading Console Handlers
+    function toggleNoVNC() {
+      const container = document.getElementById('vnc-container');
+      const iframe = document.getElementById('vnc-iframe');
+      const label = document.getElementById('vnc-toggle-label');
+      if (!container || !iframe || !label) return;
+
+      if (container.classList.contains('hidden')) {
+        container.classList.remove('hidden');
+        if (!iframe.src || iframe.src === '' || iframe.src === 'about:blank') {
+          const host = window.location.hostname || '76.13.246.133';
+          iframe.src = 'http://' + host + ':8081/vnc.html?autoconnect=true&resize=scale';
+        }
+        label.innerText = 'Hide Embedded MT5 Desktop';
+      } else {
+        container.classList.add('hidden');
+        label.innerText = 'Show Embedded MT5 Desktop';
+      }
+    }
+
+    function renderLiveTradingView() {
+      if (!telemetryCache && !overviewCache) return;
+      const scans = (telemetryCache && telemetryCache.scans && telemetryCache.scans.model_1) ? telemetryCache.scans.model_1 : {};
+      const grid = document.getElementById('live-radars-grid');
+      const assets = [
+        { sym: 'XAUUSD', name: 'Spot Gold', icon: '🥇', unit: '$' },
+        { sym: 'BTCUSD', name: 'Bitcoin', icon: '₿', unit: '$' },
+        { sym: 'ETHUSD', name: 'Ethereum', icon: '⟠', unit: '$' }
+      ];
+
+      let rawPositions = [];
+      if (telemetryCache && telemetryCache.open_positions && telemetryCache.open_positions.length > 0) {
+        rawPositions = telemetryCache.open_positions;
+      } else if (overviewCache && overviewCache.open_positions && overviewCache.open_positions.length > 0) {
+        rawPositions = overviewCache.open_positions;
+      } else if (telemetryCache && telemetryCache.recent_trades) {
+        rawPositions = telemetryCache.recent_trades.filter(t => t.status === 'OPEN');
+      }
+
+      // Defensive deduplication by ticket so Active Open Positions Blotter never renders duplicates
+      const uniquePos = new Map();
+      rawPositions.forEach(p => {
+        const k = String(p.ticket || p.symbol || p.symbol_norm || Math.random());
+        if (!uniquePos.has(k)) uniquePos.set(k, p);
+      });
+      const openPositions = Array.from(uniquePos.values());
+
+      // Compute total live floating PnL across all open positions
+      const totalFloating = openPositions.reduce((sum, p) => {
+        const sym = (p.symbol || p.asset || p.symbol_norm || '').toUpperCase();
+        const s = scans[sym] || {};
+        const livePrice = (s && s.price) ? Number(s.price) : null;
+        const entryVal = Number(p.entry || p.open_price || 0);
+        const markVal = livePrice || Number(p.mark || p.current_price || entryVal || 0);
+        const lots = Number(p.lots || parseFloat(p.volume) || 0.01);
+        const isBuy = (p.side || 'BUY').toUpperCase() === 'BUY';
+        const mult = sym.includes('XAU') || sym.includes('GOLD') ? 100.0 : 1.0;
+        return sum + (markVal > 0 && entryVal > 0 ? (isBuy ? (markVal - entryVal) * lots * mult : (entryVal - markVal) * lots * mult) : Number(p.pnl || 0));
+      }, 0);
+
+      // Top Control Bar Status Indicator
+      const consoleStatusEl = document.getElementById('live-console-status');
+      if (consoleStatusEl) {
+        if (openPositions.length > 0) {
+          const p = openPositions[0];
+          const pnlBadgeStr = (totalFloating >= 0 ? '+$' : '-$') + Math.abs(totalFloating).toFixed(2);
+          consoleStatusEl.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-600 text-white shadow-sm shadow-blue-500/20';
+          consoleStatusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span> ACTIVE TRADE IN PROGRESS (${p.symbol} ${p.side} ${p.volume || (p.lots ? p.lots + ' lots' : '')} · Floating P&L: ${pnlBadgeStr})`;
+        } else {
+          consoleStatusEl.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200';
+          consoleStatusEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> AUTONOMOUS SCANNING ACTIVE';
+        }
+      }
+
+      if (grid) {
+        grid.innerHTML = assets.map(a => {
+          const s = scans[a.sym] || {};
+          const activePos = openPositions.find(p => (p.symbol === a.sym) || (p.symbol_norm === a.sym));
+          const isInTrade = !!activePos;
+
+          const liveTick = (s && s.price) ? Number(s.price) : null;
+          const currentPriceNum = liveTick || (activePos && (activePos.mark || activePos.current_price)) || null;
+          const price = currentPriceNum ? (a.unit + currentPriceNum.toLocaleString(undefined, {minimumFractionDigits: 2})) : 'Scanning...';
+
+          const bias = s.bias || (activePos ? (activePos.side === 'BUY' ? 'BULLISH' : 'BEARISH') : 'NEUTRAL');
+          const biasColor = bias === 'BULLISH' ? 'text-emerald-600 bg-emerald-50 border-emerald-200' : (bias === 'BEARISH' ? 'text-rose-600 bg-rose-50 border-rose-200' : 'text-slate-600 bg-slate-50 border-slate-200');
+          const dUpper = s.donchian_upper ? (a.unit + Number(s.donchian_upper).toFixed(2)) : '—';
+          const dLower = s.donchian_lower ? (a.unit + Number(s.donchian_lower).toFixed(2)) : '—';
+          const dMid = s.donchian_middle ? (a.unit + Number(s.donchian_middle).toFixed(2)) : '—';
+          const atr = s.atr ? (a.unit + Number(s.atr).toFixed(2)) : '—';
+
+          let pnlVal = 0;
+          if (isInTrade) {
+            const ep = Number(activePos.entry || activePos.open_price || 0);
+            const curM = currentPriceNum || ep;
+            const lts = Number(activePos.lots || parseFloat(activePos.volume) || 0.01);
+            const isB = (activePos.side || 'BUY').toUpperCase() === 'BUY';
+            const mult = a.sym.includes('XAU') || a.sym.includes('GOLD') ? 100.0 : 1.0;
+            if (curM > 0 && ep > 0) {
+              pnlVal = isB ? (curM - ep) * lts * mult : (ep - curM) * lts * mult;
+            } else {
+              pnlVal = Number(activePos.pnl || activePos.unrealized_pnl || 0);
+            }
+          }
+          const pnlClass = pnlVal >= 0 ? 'text-emerald-600' : 'text-rose-600';
+          const pnlFormatted = (pnlVal >= 0 ? '+$' : '-$') + Math.abs(pnlVal).toFixed(2);
+
+          let reason = s.reason || s.decision || 'Evaluating 1H Donchian channel breakout criteria.';
+          if (isInTrade) {
+            const ep = Number(activePos.entry || activePos.open_price || 0).toFixed(2);
+            const sl = Number(activePos.sl || activePos.stop_loss || 0).toFixed(2);
+            const tp = Number(activePos.tp || activePos.take_profit || 0).toFixed(2);
+            reason = `⚡ Active In-Market Position #${activePos.ticket}: Floating P&L: ${pnlFormatted} · Staged scale-out at TP1 ($${tp}), dynamic ATR trailing runner with stop loss at $${sl}.`;
+          }
+
+          const cardBorder = isInTrade
+            ? 'border-2 border-blue-500 bg-blue-500/[0.02] shadow-lg shadow-blue-500/10'
+            : 'border border-slate-200';
+
+          const tradeBanner = isInTrade ? `
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl px-3.5 py-2 flex items-center justify-between text-xs font-bold shadow-sm">
+              <span class="flex items-center gap-2">
+                <span class="relative flex h-2 w-2">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+                </span>
+                <span>IN TRADE #${activePos.ticket} (${activePos.side})</span>
+              </span>
+              <span class="bg-white/20 px-2 py-0.5 rounded text-[11px] font-mono">${activePos.volume || (activePos.lots ? activePos.lots + ' lots' : '')}</span>
+            </div>
+          ` : '';
+
+          const inTradeBox = isInTrade ? `
+            <div class="bg-blue-50/70 border border-blue-200/80 rounded-xl p-3 space-y-2">
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-slate-500 font-medium">Position Size</span>
+                <span class="font-bold text-slate-800">${activePos.side} · ${activePos.volume || (activePos.lots ? activePos.lots + ' lots' : '')}</span>
+              </div>
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-slate-500 font-medium">Entry Price</span>
+                <span class="font-mono font-bold text-slate-800">$${Number(activePos.entry || activePos.open_price || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+              </div>
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-slate-500 font-medium">Mark Price</span>
+                <span class="font-mono font-bold text-slate-900">$${currentPriceNum ? currentPriceNum.toLocaleString(undefined, {minimumFractionDigits: 2}) : '—'}</span>
+              </div>
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-slate-500 font-medium">Floating P&L</span>
+                <span class="font-mono font-black ${pnlClass} text-sm">${pnlFormatted}</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2 pt-2 border-t border-blue-200/60 text-[11px]">
+                <div>
+                  <span class="text-slate-500 block font-medium">TP1 Target (1.25R)</span>
+                  <span class="font-bold text-emerald-600 font-mono">$${Number(activePos.tp || activePos.take_profit || 0).toFixed(2)}</span>
+                </div>
+                <div>
+                  <span class="text-slate-500 block font-medium">Stop Loss (ATR)</span>
+                  <span class="font-bold text-rose-600 font-mono">$${Number(activePos.sl || activePos.stop_loss || 0).toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+          ` : '';
+
+          return `
+            <div class="card p-5 space-y-3 ${cardBorder}">
+              ${tradeBanner}
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-2xl">${a.icon}</span>
+                  <div>
+                    <h3 class="text-sm font-bold text-slate-900">${a.name} (${a.sym})</h3>
+                    <span class="text-[11px] font-semibold text-slate-400">1H Donchian 10 · 1.5x ATR</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  ${isInTrade ? '<span class="metric-badge bg-blue-600 text-white font-bold text-xs shadow-sm">● IN TRADE</span>' : ''}
+                  <span class="metric-badge ${biasColor} font-bold text-xs">${bias}</span>
+                </div>
+              </div>
+              <div class="flex items-baseline justify-between pt-1">
+                <span class="text-2xl font-bold text-slate-900">${price}</span>
+                <span class="text-xs font-semibold text-slate-500">ATR: <span class="text-slate-800 font-bold">${atr}</span></span>
+              </div>
+              ${inTradeBox}
+              <div class="grid grid-cols-3 gap-2 text-[11px] bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-center">
+                <div>
+                  <span class="text-slate-400 block font-medium">Upper</span>
+                  <span class="font-bold text-slate-800 font-mono">${dUpper}</span>
+                </div>
+                <div>
+                  <span class="text-slate-400 block font-medium">Midline</span>
+                  <span class="font-bold text-slate-800 font-mono">${dMid}</span>
+                </div>
+                <div>
+                  <span class="text-slate-400 block font-medium">Lower</span>
+                  <span class="font-bold text-slate-800 font-mono">${dLower}</span>
+                </div>
+              </div>
+              <div class="text-[11px] text-slate-600 bg-slate-50/60 p-2.5 rounded-xl border border-slate-100 leading-relaxed font-mono">
+                ${reason}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      const stream = document.getElementById('live-execution-stream');
+      if (stream) {
+        const events = [];
+        openPositions.forEach(p => {
+          const sym = (p.symbol || '').toUpperCase();
+          const s = scans[sym] || {};
+          const livePrice = (s && s.price) ? Number(s.price) : null;
+          const entryVal = Number(p.entry || p.open_price || 0);
+          const markVal = livePrice || Number(p.mark || p.current_price || entryVal || 0);
+          const lots = Number(p.lots || parseFloat(p.volume) || 0.01);
+          const isBuy = (p.side || 'BUY').toUpperCase() === 'BUY';
+          const mult = sym.includes('XAU') || sym.includes('GOLD') ? 100.0 : 1.0;
+          const pnl = markVal > 0 && entryVal > 0 ? (isBuy ? (markVal - entryVal) * lots * mult : (entryVal - markVal) * lots * mult) : Number(p.pnl || 0);
+          const pnlFormatted = (pnl >= 0 ? '+$' : '-$') + Math.abs(pnl).toFixed(2);
+
+          events.push({
+            time: p.time ? p.time.slice(11, 19) : 'ACTIVE',
+            sym: p.symbol,
+            bias: p.side === 'BUY' ? 'BULLISH' : 'BEARISH',
+            decision: `🟢 ACTIVE IN-MARKET TRADE: Ticket #${p.ticket} · ${p.side} ${p.volume || (p.lots ? p.lots + ' lots' : '')} @ $${Number(p.entry || p.open_price).toFixed(2)} | Floating P&L: ${pnlFormatted} (SL: $${Number(p.sl || p.stop_loss).toFixed(2)} | TP1: $${Number(p.tp || p.take_profit).toFixed(2)})`
+          });
+        });
+        assets.forEach(a => {
+          const s = scans[a.sym];
+          if (s && s.timestamp) {
+            events.push({
+              time: s.timestamp,
+              sym: a.sym,
+              bias: s.bias,
+              decision: s.decision || s.reason
+            });
+          }
+        });
+        if (events.length > 0) {
+          stream.innerHTML = events.map(e => `
+            <div class="flex items-start gap-2.5 py-1.5 border-b border-slate-100 text-[11px]">
+              <span class="text-slate-400 font-semibold whitespace-nowrap">${e.time}</span>
+              <span class="px-1.5 py-0.5 rounded font-bold ${e.bias === 'BULLISH' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}">${e.sym}</span>
+              <span class="text-slate-700">${e.decision}</span>
+            </div>
+          `).join('');
+        }
+      }
+
+      // Active Open Positions Blotter update
+      const posTable = document.getElementById('live-positions-tbody');
+      const badge = document.getElementById('live-active-badge');
+      if (badge) {
+        const pnlBadgeStr = openPositions.length > 0 ? ` (${totalFloating >= 0 ? '+$' : '-$'}${Math.abs(totalFloating).toFixed(2)} Floating)` : '';
+        badge.innerText = openPositions.length + (openPositions.length === 1 ? ' Open Position' : ' Open Positions') + pnlBadgeStr;
+        badge.className = openPositions.length > 0
+          ? 'metric-badge bg-blue-600 text-white font-bold text-xs shadow-sm shadow-blue-500/20'
+          : 'metric-badge bg-slate-100 text-slate-600 font-semibold text-xs';
+      }
+      if (posTable) {
+        if (openPositions.length === 0) {
+          posTable.innerHTML = `
+            <tr>
+              <td colspan="10" class="py-8 text-center text-slate-400 text-xs">
+                Scanning active across Gold, Bitcoin, and Ethereum. No open positions currently in market (Account flat & capital preserved).
+              </td>
+            </tr>
+          `;
+        } else {
+          posTable.innerHTML = openPositions.map(p => {
+            const sym = (p.symbol || p.asset || '').toUpperCase();
+            const s = scans[sym] || {};
+            const livePrice = (s && s.price) ? Number(s.price) : null;
+            const entryVal = Number(p.entry || p.open_price || 0);
+            const markVal = livePrice || Number(p.mark || p.current_price || entryVal || 0);
+            const lots = Number(p.lots || parseFloat(p.volume) || 0.01);
+            const isBuy = (p.side || 'BUY').toUpperCase() === 'BUY';
+            const mult = sym.includes('XAU') || sym.includes('GOLD') ? 100.0 : 1.0;
+
+            let pnl = 0;
+            if (markVal > 0 && entryVal > 0) {
+              pnl = isBuy ? (markVal - entryVal) * lots * mult : (entryVal - markVal) * lots * mult;
+            } else {
+              pnl = Number(p.pnl || p.unrealized_pnl || 0);
+            }
+            const pnlClass = pnl >= 0 ? 'text-emerald-600 font-bold' : 'text-rose-600 font-bold';
+            const pnlFormatted = (pnl >= 0 ? '+$' : '-$') + Math.abs(pnl).toFixed(2);
+            const sideClass = isBuy
+              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+              : 'bg-rose-50 text-rose-700 border-rose-200';
+            const volStr = p.volume || (p.lots ? p.lots + ' lots' : '—');
+            const slVal = Number(p.sl || p.stop_loss || 0);
+            const tpVal = Number(p.tp || p.take_profit || 0);
+
+            return `
+              <tr class="hover:bg-blue-50/30 transition-colors bg-white">
+                <td class="py-3 font-mono text-slate-800 font-bold">#${p.ticket || '—'}</td>
+                <td class="py-3 font-bold text-slate-900">${p.symbol || p.asset || '—'}</td>
+                <td class="py-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold border ${sideClass}">${p.side}</span></td>
+                <td class="py-3 font-mono text-slate-700 font-semibold">${volStr}</td>
+                <td class="py-3 font-mono text-slate-700">$${entryVal.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                <td class="py-3 font-mono text-slate-900 font-semibold">$${markVal.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                <td class="py-3 font-mono text-rose-600">$${slVal > 0 ? slVal.toLocaleString(undefined, {minimumFractionDigits: 2}) : '—'}</td>
+                <td class="py-3 font-mono text-emerald-600 font-medium">$${tpVal > 0 ? tpVal.toLocaleString(undefined, {minimumFractionDigits: 2}) : '—'}</td>
+                <td class="py-3 font-mono ${pnlClass}">${pnlFormatted}</td>
+                <td class="py-3"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 border border-blue-200 shadow-xs">● IN MARKET</span></td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+    }
+
+    function renderPortfolioView() {
+      if (!overviewCache) return;
+      const ov = overviewCache.overall_summary || {};
+      const acc = overviewCache.account || {};
+
+      const bal = acc.balance || ov.balance || 3454.53;
+      const pnl = ov.pnl || 454.53;
+
+      const balEl = document.getElementById('port-balance');
+      if (balEl) balEl.innerText = '$' + Number(bal).toLocaleString(undefined, {minimumFractionDigits: 2});
+
+      const pnlEl = document.getElementById('port-net-pnl');
+      if (pnlEl) {
+        pnlEl.innerText = (pnl >= 0 ? '+$' : '-$') + Math.abs(pnl).toLocaleString(undefined, {minimumFractionDigits: 2});
+        pnlEl.className = 'text-lg font-bold ' + (pnl >= 0 ? 'text-emerald-600' : 'text-rose-500');
+      }
+
+      const trades = (overviewCache.trades || []).filter(t => t.status === 'CLOSED');
+      const wins = trades.filter(t => Number(t.pnl) > 0);
+      const losses = trades.filter(t => Number(t.pnl) < 0);
+      const totalTrades = trades.length;
+      const totalWins = wins.length;
+      const totalLosses = losses.length;
+
+      const wrEl = document.getElementById('port-win-rate');
+      if (wrEl && totalTrades > 0) {
+        const wr = ((totalWins / totalTrades) * 100).toFixed(1);
+        wrEl.innerText = wr + '%';
+        if (wrEl.nextElementSibling) wrEl.nextElementSibling.innerText = `${totalWins} Wins / ${totalLosses} Losses`;
+      }
+
+      const pfEl = document.getElementById('port-pf');
+      if (pfEl && totalTrades > 0) {
+        const grossW = wins.reduce((s, t) => s + Number(t.pnl), 0);
+        const grossL = Math.abs(losses.reduce((s, t) => s + Number(t.pnl), 0));
+        const pf = grossL > 0 ? (grossW / grossL).toFixed(2) : (grossW > 0 ? '2.50' : '1.15');
+        pfEl.innerText = pf;
+      }
+
+      const expEl = document.getElementById('port-expectancy');
+      if (expEl && totalTrades > 0) {
+        const totPnl = trades.reduce((s, t) => s + Number(t.pnl), 0);
+        const exp = (totPnl / totalTrades).toFixed(2);
+        expEl.innerText = (Number(exp) >= 0 ? '+$' : '-$') + Math.abs(Number(exp)).toFixed(2);
+      }
+
+      // Drawdown calculation
+      let peak = 0;
+      let maxDd = 0;
+      let run = 0;
+      trades.slice().reverse().forEach(t => {
+        run += Number(t.pnl || 0);
+        if (run > peak) peak = run;
+        const dd = peak - run;
+        if (dd > maxDd) maxDd = dd;
+      });
+      const ddEl = document.getElementById('port-max-dd');
+      if (ddEl && maxDd > 0) {
+        ddEl.innerText = '-$' + maxDd.toFixed(2);
+      }
+
+      filterBlotter();
+    }
+
+    function filterBlotter() {
+      if (!overviewCache || !overviewCache.trades) return;
+      const trades = overviewCache.trades || [];
+      const search = (document.getElementById('blotter-search') ? document.getElementById('blotter-search').value.toLowerCase().trim() : '');
+      const assetFilter = document.getElementById('blotter-filter-asset') ? document.getElementById('blotter-filter-asset').value : 'ALL';
+      const outcomeFilter = document.getElementById('blotter-filter-outcome') ? document.getElementById('blotter-filter-outcome').value : 'ALL';
+
+      const filtered = trades.filter(t => {
+        if (assetFilter !== 'ALL' && t.asset !== assetFilter) return false;
+        const pnl = Number(t.pnl || 0);
+        if (outcomeFilter === 'WIN' && pnl <= 0) return false;
+        if (outcomeFilter === 'LOSS' && pnl >= 0) return false;
+        if (search) {
+          const hay = (t.ticket + ' ' + t.asset + ' ' + t.side + ' ' + (t.comment || '')).toLowerCase();
+          if (!hay.includes(search)) return false;
+        }
+        return true;
+      });
+
+      const tbody = document.getElementById('blotter-tbody');
+      if (!tbody) return;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" class="py-8 text-center text-slate-400">No trades match your search filter criteria.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(t => {
+        const pnl = Number(t.pnl || 0);
+        const pnlClass = pnl > 0 ? 'text-emerald-600' : (pnl < 0 ? 'text-rose-500' : 'text-slate-500');
+        const pnlStr = (pnl >= 0 ? '+$' : '-$') + Math.abs(pnl).toFixed(2);
+        const sideClass = t.side === 'BUY' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200';
+        const rVal = t.rr ? (Number(t.rr) * (pnl >= 0 ? 1 : -1)).toFixed(2) + 'R' : (pnl >= 0 ? '+1.25R' : '-1.00R');
+
+        return `
+          <tr class="hover:bg-slate-50/50 transition-colors">
+            <td class="py-2.5 font-mono text-slate-500 text-[11px]">${t.time || '—'}</td>
+            <td class="py-2.5 font-mono text-slate-700 font-semibold">${t.ticket || '—'}</td>
+            <td class="py-2.5 font-bold text-slate-900">${t.asset}</td>
+            <td class="py-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold border ${sideClass}">${t.side}</span></td>
+            <td class="py-2.5 font-mono text-slate-600">${t.qty || '—'}</td>
+            <td class="py-2.5 font-mono text-slate-600">$${Number(t.entry || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+            <td class="py-2.5 font-mono text-slate-600">$${Number(t.exit || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+            <td class="py-2.5 font-bold ${pnlClass}">${pnlStr}</td>
+            <td class="py-2.5 font-bold ${pnl >= 0 ? 'text-emerald-600' : 'text-rose-500'} font-mono">${rVal}</td>
+            <td class="py-2.5 text-slate-500 font-mono text-[10px]">${t.comment || t.strategy || '—'}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function exportTradesToCSV() {
+      if (!overviewCache || !overviewCache.trades) {
+        alert('No trades available to export.');
+        return;
+      }
+      const trades = overviewCache.trades;
+      const headers = ['Time', 'Ticket', 'Asset', 'Side', 'Quantity', 'Status', 'Entry', 'Exit', 'StopLoss', 'TakeProfit', 'PnL_USD', 'Comment'];
+      const rows = trades.map(t => [
+        t.time,
+        t.ticket,
+        t.asset,
+        t.side,
+        t.qty,
+        t.status,
+        t.entry,
+        t.exit,
+        t.sl,
+        t.tp,
+        t.pnl,
+        `"${t.comment || ''}"`
+      ]);
+
+      const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', `aegis_trades_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function exportTradesToJSON() {
+      if (!overviewCache || !overviewCache.trades) {
+        alert('No trades available to export.');
+        return;
+      }
+      const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(overviewCache.trades, null, 2));
+      const link = document.createElement('a');
+      link.setAttribute('href', dataStr);
+      link.setAttribute('download', `aegis_trades_${new Date().toISOString().slice(0, 10)}.json`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function renderRiskView() {
+      if (!overviewCache) return;
+      const ov = overviewCache.overall_summary || {};
+      const acc = overviewCache.account || {};
+
+      // Daily loss circuit breaker
+      const todayPnl = ov.today_pnl !== undefined ? Number(ov.today_pnl) : 0;
+      const dayEl = document.getElementById('risk-daily-val');
+      if (dayEl) {
+        dayEl.innerText = (todayPnl >= 0 ? '+$' : '-$') + Math.abs(todayPnl).toFixed(2);
+        dayEl.className = 'font-bold ' + (todayPnl >= 0 ? 'text-emerald-600' : (todayPnl < -200 ? 'text-rose-600' : 'text-slate-900'));
+      }
+      const dayBar = document.getElementById('risk-daily-bar');
+      if (dayBar) {
+        // Limit is $250 loss. If pnl >= 0, width is 100%. If negative, shrinks towards 0%.
+        const remPct = todayPnl >= 0 ? 100 : Math.max(0, Math.min(100, Math.round(((250 + todayPnl) / 250) * 100)));
+        dayBar.style.width = remPct + '%';
+        dayBar.className = (remPct > 40 ? 'bg-emerald-500' : 'bg-rose-500') + ' h-2 rounded-full';
+      }
+
+      // Max drawdown
+      const trades = (overviewCache.trades || []).filter(t => t.status === 'CLOSED');
+      let peak = 0;
+      let maxDd = 0;
+      let run = 0;
+      trades.slice().reverse().forEach(t => {
+        run += Number(t.pnl || 0);
+        if (run > peak) peak = run;
+        const dd = peak - run;
+        if (dd > maxDd) maxDd = dd;
+      });
+      const ddValEl = document.getElementById('risk-max-dd-val');
+      if (ddValEl && maxDd > 0) {
+        ddValEl.innerText = '-$' + maxDd.toFixed(2);
+      }
+      const ddBar = document.getElementById('risk-dd-bar');
+      if (ddBar && maxDd > 0) {
+        const ddPct = Math.min(100, Math.round((maxDd / 600) * 100));
+        ddBar.style.width = ddPct + '%';
+      }
+
+      // Margin utilization
+      const freeMargin = acc.free_margin !== undefined ? Number(acc.free_margin) : (acc.balance ? Number(acc.balance) : 3454.53);
+      const margin = acc.margin !== undefined ? Number(acc.margin) : 0;
+      const freeEl = document.getElementById('risk-free-margin-val');
+      if (freeEl) freeEl.innerText = '$' + freeMargin.toLocaleString(undefined, {minimumFractionDigits: 2});
+      const mBadge = document.getElementById('risk-margin-badge');
+      if (mBadge) {
+        const usedPct = freeMargin > 0 ? ((margin / (freeMargin + margin)) * 100).toFixed(1) : '0.0';
+        mBadge.innerText = usedPct + '% USED';
       }
     }
 

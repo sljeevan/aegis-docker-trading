@@ -1,0 +1,10 @@
+fastapi>=0.100.0
+uvicorn[standard]>=0.22.0
+pydantic>=2.0.0
+requests>=2.31.0
+openbb==5.0.0
+openbb-core==2.0.1
+openbb-federal-reserve==2.0.0
+openbb-fred==2.0.0
+openbb-deribit==2.0.0
+openbb-cftc==2.0.0
