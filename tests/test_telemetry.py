@@ -179,10 +179,34 @@ def test_telemetry_store_in_memory():
         action="BUY",
         lots=0.05,
         entry_price=2740.0,
+        status="OPEN",
+        pnl=10.0,
+    )
+    store.record_local_event("aegis.telemetry.trade", trade)
+
+    trade_other = TradeEvent(
+        node_id="node-1",
+        symbol="BTCUSD",
+        ticket=88888,
+        action="BUY",
+        lots=0.01,
+        entry_price=65000.0,
+        status="OPEN",
+        pnl=5.0,
+    )
+    store.record_local_event("aegis.telemetry.trade", trade_other)
+
+    trade_closed = TradeEvent(
+        node_id="node-1",
+        symbol="XAUUSD",
+        ticket=99999,
+        action="BUY",
+        lots=0.05,
+        entry_price=2740.0,
         status="CLOSED",
         pnl=94.50,
     )
-    store.record_local_event("aegis.telemetry.trade", trade)
+    store.record_local_event("aegis.telemetry.trade", trade_closed)
 
     # Verify query methods
     assert store.is_telemetry_active() is True
@@ -196,12 +220,16 @@ def test_telemetry_store_in_memory():
     assert scans["model_1"]["XAUUSD"]["atr"] == 10.5
 
     trades = store.get_recent_trades(limit=10)
-    assert len(trades) == 1
+    assert len(trades) == 2
     assert trades[0]["ticket"] == 99999
+    assert trades[0]["status"] == "CLOSED"
     assert trades[0]["pnl"] == 94.50
+    assert trades[1]["ticket"] == 88888
+    assert trades[1]["status"] == "OPEN"
 
 
 def test_dashboard_api_telemetry_endpoints():
+    pytest.importorskip("fastapi")
     from fastapi.testclient import TestClient
     from gold_trader.api.docker_dashboard_api import app
 

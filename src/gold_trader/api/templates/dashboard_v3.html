@@ -62,25 +62,36 @@
 <body class="min-h-screen flex antialiased">
 
   <!-- ========================================================================= -->
-  <!-- LEFT SIDEBAR -->
+  <!-- MOBILE BACKDROP OVERLAY -->
   <!-- ========================================================================= -->
-  <aside class="w-64 bg-white border-r border-slate-200 flex flex-col justify-between p-4 shrink-0 hidden lg:flex sticky top-0 h-screen overflow-y-auto">
+  <div id="sidebar-backdrop" onclick="toggleSidebar(false)" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity duration-300"></div>
+
+  <!-- ========================================================================= -->
+  <!-- LEFT SIDEBAR (Desktop Sticky + Mobile Off-Canvas Drawer) -->
+  <!-- ========================================================================= -->
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-white border-r border-slate-200 flex flex-col justify-between p-4 shrink-0 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-2xl lg:shadow-none lg:translate-x-0 lg:static lg:sticky lg:top-0 lg:z-auto lg:w-64 h-screen overflow-y-auto">
     <div class="space-y-6">
-      <!-- Logo Branding -->
-      <div class="flex items-center gap-3 px-2 py-1">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
-          <!-- Shield Icon -->
-          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm0 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
-          </svg>
-        </div>
-        <div>
-          <div class="font-bold text-slate-900 text-lg leading-tight flex items-center gap-1.5">
-            Aegis Alpha
-            <span class="text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-200 px-1.5 py-0.5 rounded-full">v3.0</span>
+      <!-- Logo Branding & Mobile Close Button -->
+      <div class="flex items-center justify-between px-2 py-1">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20 shrink-0">
+            <!-- Shield Icon -->
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm0 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
+            </svg>
           </div>
-          <p class="text-[11px] text-slate-400 font-medium">Quantitative Trading System</p>
+          <div>
+            <div class="font-bold text-slate-900 text-lg leading-tight flex items-center gap-1.5">
+              Aegis Alpha
+              <span class="text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-200 px-1.5 py-0.5 rounded-full">v3.0</span>
+            </div>
+            <p class="text-[11px] text-slate-400 font-medium">Quantitative Trading System</p>
+          </div>
         </div>
+        <!-- Close button for mobile screens -->
+        <button onclick="toggleSidebar(false)" class="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors" aria-label="Close menu">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
       </div>
 
       <!-- Navigation Links -->
@@ -172,20 +183,27 @@
   <main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
 
     <!-- Top Header Bar -->
-    <header class="bg-white border-b border-slate-200 px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 sticky top-0 z-30">
-      <div>
-        <div class="flex items-center gap-2.5">
-          <h1 class="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-            Aegis Alpha <span class="text-blue-600 font-medium">v3.0</span>
-          </h1>
-          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            LIVE TRADING
-          </span>
+    <header class="bg-white border-b border-slate-200 px-4 md:px-6 py-3.5 md:py-4 flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 sticky top-0 z-30">
+      <div class="flex items-center gap-3">
+        <!-- Mobile Hamburger Toggle Button -->
+        <button onclick="toggleSidebar(true)" id="mobile-sidebar-toggle" class="lg:hidden p-2 rounded-xl text-slate-600 hover:text-blue-600 hover:bg-slate-100 border border-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 shrink-0" aria-label="Open navigation menu">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+
+        <div>
+          <div class="flex items-center gap-2.5">
+            <h1 class="text-xl md:text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+              Aegis Alpha <span class="text-blue-600 font-medium">v3.0</span>
+            </h1>
+            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] md:text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              LIVE TRADING
+            </span>
+          </div>
+          <p class="text-[11px] md:text-xs text-slate-500 font-medium mt-0.5 truncate max-w-[280px] sm:max-w-md md:max-w-none">
+            Decoupled Docker Cluster • Spot Gold (XAUUSD) • Account 346439083 • Autonomous Wine MT5 Trading Node
+          </p>
         </div>
-        <p class="text-xs text-slate-500 font-medium mt-0.5">
-          Decoupled Docker Cluster • Spot Gold (XAUUSD) • Account 346439083 • Autonomous Wine MT5 Trading Node
-        </p>
       </div>
 
       <!-- Controls & Avatar -->
@@ -1439,9 +1457,34 @@
     setInterval(updateClock, 1000);
     updateClock();
 
+    // Mobile Sidebar Drawer Controller
+    function toggleSidebar(open) {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('sidebar-backdrop');
+      if (!sidebar || !backdrop) return;
+      if (open) {
+        sidebar.classList.remove('-translate-x-full');
+        sidebar.classList.add('translate-x-0');
+        backdrop.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+      } else {
+        sidebar.classList.add('-translate-x-full');
+        sidebar.classList.remove('translate-x-0');
+        backdrop.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+      }
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') toggleSidebar(false);
+    });
+
     // 2. Tab Navigation
     function switchTab(tab) {
       currentTab = tab;
+      if (window.innerWidth < 1024) {
+        toggleSidebar(false);
+      }
       const tabs = ['dashboard', 'live-trading', 'strategies', 'models', 'portfolio', 'journal', 'backtesting', 'risk'];
       tabs.forEach(t => {
         const btn = document.getElementById('nav-' + t);
@@ -2123,9 +2166,9 @@
         telemetryCache = data;
 
         // Sync open positions from telemetry into overviewCache for unified access
-        let rawTelemetryPos = (data.open_positions && data.open_positions.length > 0)
+        let rawTelemetryPos = Array.isArray(data.open_positions)
           ? data.open_positions
-          : ((overviewCache && overviewCache.open_positions) ? overviewCache.open_positions : []);
+          : (Array.isArray(overviewCache && overviewCache.open_positions) ? overviewCache.open_positions : []);
 
         const uniqueTelPosMap = new Map();
         rawTelemetryPos.forEach(p => {
@@ -2478,12 +2521,10 @@ Saved Report      : ${data.report_path}
       ];
 
       let rawPositions = [];
-      if (telemetryCache && telemetryCache.open_positions && telemetryCache.open_positions.length > 0) {
+      if (telemetryCache && Array.isArray(telemetryCache.open_positions)) {
         rawPositions = telemetryCache.open_positions;
-      } else if (overviewCache && overviewCache.open_positions && overviewCache.open_positions.length > 0) {
+      } else if (overviewCache && Array.isArray(overviewCache.open_positions)) {
         rawPositions = overviewCache.open_positions;
-      } else if (telemetryCache && telemetryCache.recent_trades) {
-        rawPositions = telemetryCache.recent_trades.filter(t => t.status === 'OPEN');
       }
 
       // Defensive deduplication by ticket so Active Open Positions Blotter never renders duplicates

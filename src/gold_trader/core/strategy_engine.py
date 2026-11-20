@@ -50,6 +50,7 @@ class StrategyConfig:
     require_slope_alignment: bool = True
     pullback_discount_pips: float = 0.0
     use_pullback_limit: bool = False
+    enable_ml_filter: bool = False
     min_win_probability: float = 0.50
     runner_t2_multiplier: float = 3.0
     broker: Optional[Any] = None
@@ -1049,6 +1050,7 @@ def generate_compounding_ladder_setup(
     adx_min_threshold: Optional[float] = None,
     require_slope_alignment: bool = True,
     runner_t2_multiplier: float = 3.0,
+    enable_ml_filter: bool = False,
     strategy_config: Optional[StrategyConfig] = None,
     require_broker: bool = False,
 ) -> Dict[str, Any]:
@@ -1085,6 +1087,7 @@ def generate_compounding_ladder_setup(
         require_slope_alignment=require_slope_alignment,
         pullback_discount_pips=pullback_discount_pips if use_pullback_limit else 0.0,
         use_pullback_limit=use_pullback_limit,
+        enable_ml_filter=enable_ml_filter,
         min_win_probability=min_win_probability,
         runner_t2_multiplier=runner_t2_multiplier,
     )
@@ -1179,64 +1182,65 @@ def generate_compounding_ladder_setup(
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
-    # Machine Learning / Empirical Gatekeeper
-    win_prob = 0.0
-    ml_result = None
-    try:
-        from gold_trader.core.ml_filter import GoldMLPredictor
-        predictor = GoldMLPredictor(symbol=symbol)
-        candles_entry = fetch_gold_candles(
-            symbol,
-            period="1mo",
-            interval=effective_tf,
-            require_broker=require_broker,
-            broker=cfg.broker,
-            broker_port=cfg.broker_port,
-        )
-        if len(candles_entry) >= 100:
-            ml_result = predictor.predict_trade_probability(
-                candles_entry,
-                direction=action,
-                min_probability_threshold=cfg.min_win_probability,
-            )
-            win_prob = float(ml_result.get("probability_win", 0.0))
-        else:
-            ml_result = {"status": "INSUFFICIENT_DATA", "error": f"Candle history ({len(candles_entry)}) < 100 bars", "probability_win": 0.0}
-    except Exception as e:
-        ml_result = {"status": "ERROR", "error": f"ML prediction error: {e}", "probability_win": 0.0}
-
-    is_high_conviction = (win_prob >= cfg.min_win_probability)
-
     default_setup_name = (
         f"{effective_tf.upper()} Donchian {cfg.donchian_period} + Momentum Hybrid Compounding"
         if is_hybrid
         else f"{effective_tf} EMA 9/21 Value Zone Pullback"
     )
 
-    if not is_high_conviction:
-        return {
-            "status": "REJECTED_BY_ML_GATE",
-            "action": "PASS",
-            "symbol": symbol.upper(),
-            "level": current_level,
-            "market_price": market_price,
-            "entry_price": market_price,
-            "candle_time": setup_data.get("candle_time"),
-            "bias": setup_data.get("bias", "NEUTRAL"),
-            "effective_strategy_mode": mode_used,
-            "effective_timeframe": effective_tf,
-            "effective_donchian_period": cfg.donchian_period,
-            "effective_trigger_mode": cfg.trigger_mode,
-            "strategy_hash": cfg.get_hash(),
-            "setup_name": setup_data.get("setup_name", default_setup_name),
-            "reason": f"Predicted win probability ({win_prob:.1%}) is below threshold ({cfg.min_win_probability:.1%}). Account risk preserved.",
-            "win_probability": win_prob,
-            "ml_evaluation": ml_result,
-            "ladder_status": ladder_status,
-            "bracket_order_specs": bracket_order,
-            "setup_details": setup_data,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-        }
+    # Machine Learning / Empirical Gatekeeper (only enforced if enable_ml_filter is True)
+    win_prob = 0.50
+    ml_result = None
+    if getattr(cfg, "enable_ml_filter", False):
+        try:
+            from gold_trader.core.ml_filter import GoldMLPredictor
+            predictor = GoldMLPredictor(symbol=symbol)
+            candles_entry = fetch_gold_candles(
+                symbol,
+                period="1mo",
+                interval=effective_tf,
+                require_broker=require_broker,
+                broker=cfg.broker,
+                broker_port=cfg.broker_port,
+            )
+            if len(candles_entry) >= 100:
+                ml_result = predictor.predict_trade_probability(
+                    candles_entry,
+                    direction=action,
+                    min_probability_threshold=cfg.min_win_probability,
+                )
+                win_prob = float(ml_result.get("probability_win", 0.0))
+            else:
+                ml_result = {"status": "INSUFFICIENT_DATA", "error": f"Candle history ({len(candles_entry)}) < 100 bars", "probability_win": 0.0}
+        except Exception as e:
+            ml_result = {"status": "ERROR", "error": f"ML prediction error: {e}", "probability_win": 0.0}
+
+        is_high_conviction = (win_prob >= cfg.min_win_probability)
+
+        if not is_high_conviction:
+            return {
+                "status": "REJECTED_BY_ML_GATE",
+                "action": "PASS",
+                "symbol": symbol.upper(),
+                "level": current_level,
+                "market_price": market_price,
+                "entry_price": market_price,
+                "candle_time": setup_data.get("candle_time"),
+                "bias": setup_data.get("bias", "NEUTRAL"),
+                "effective_strategy_mode": mode_used,
+                "effective_timeframe": effective_tf,
+                "effective_donchian_period": cfg.donchian_period,
+                "effective_trigger_mode": cfg.trigger_mode,
+                "strategy_hash": cfg.get_hash(),
+                "setup_name": setup_data.get("setup_name", default_setup_name),
+                "reason": f"Predicted win probability ({win_prob:.1%}) is below threshold ({cfg.min_win_probability:.1%}). Account risk preserved.",
+                "win_probability": win_prob,
+                "ml_evaluation": ml_result,
+                "ladder_status": ladder_status,
+                "bracket_order_specs": bracket_order,
+                "setup_details": setup_data,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }
 
     return {
         "status": "APPROVED_HIGH_CONVICTION",

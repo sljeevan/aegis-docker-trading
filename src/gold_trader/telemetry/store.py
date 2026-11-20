@@ -270,8 +270,18 @@ class TelemetryStore:
 
     def get_recent_trades(self, limit: int = 50) -> List[Dict[str, Any]]:
         with self._lock:
-            items = list(self._trades)[:limit]
-            return [t.to_dict() for t in items]
+            seen_tickets = set()
+            result = []
+            for t in self._trades:
+                tkt = str(t.ticket or "")
+                if tkt:
+                    if tkt in seen_tickets:
+                        continue
+                    seen_tickets.add(tkt)
+                result.append(t.to_dict())
+                if len(result) >= limit:
+                    break
+            return result
 
     def record_local_event(self, channel: str, event_obj: Any) -> None:
         """Allows in-process injection without Redis (e.g. testing or local fallback)."""
